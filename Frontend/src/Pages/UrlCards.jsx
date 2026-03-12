@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const UrlCards = ({ urls, setUrls }) => {
   const [copiedId, setCopiedId] = useState(null);
@@ -11,6 +12,7 @@ const UrlCards = ({ urls, setUrls }) => {
       await navigator.clipboard.writeText(fullUrl);
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 2000);
+      toast.success("Copied")
     } catch (err) {
       console.error("Failed to copy:", err);
     }
@@ -21,14 +23,15 @@ const UrlCards = ({ urls, setUrls }) => {
       try {
         const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
         const res = await axios.get(`${API_URL}/urlshortner`);
+        console.log(res);
 
         // Map backend database fields to frontend property names
         const mappedData = res.data.map((item) => ({
           id: item.id,
           originalUrl: item.url,
-          shortUrl: item.shortcode,
+          shortUrl: item.shortCode,
           clicks: item.clicks,
-          createdAt: item.created_at,
+          createdAt: item.createdAt,
         }));
 
         setUrls(mappedData);

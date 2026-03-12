@@ -1,10 +1,17 @@
 import crypto from "crypto";
+// import {
+//   saveLink,
+//   findLinkByShortcode,
+//   getAllLinks,
+//   incrementClicks,
+// } from "../Models/urlModel.model.js";
+
 import {
   saveLink,
   findLinkByShortcode,
   getAllLinks,
   incrementClicks,
-} from "../Models/urlModel.model.js";
+} from "../Models/urlModelPrisma.model.js";
 
 export const getAvailabledata = async (req, res) => {
   try {
