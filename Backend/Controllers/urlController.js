@@ -1,4 +1,9 @@
 import crypto from "crypto";
+import { db } from "../Config/drizzleDB.js";
+import { urlTable } from "../Drizzle/schema.js";
+import { eq } from "drizzle-orm";
+
+// {This imports for MySql}
 // import {
 //   saveLink,
 //   findLinkByShortcode,
@@ -6,12 +11,23 @@ import crypto from "crypto";
 //   incrementClicks,
 // } from "../Models/urlModel.model.js";
 
+// {This imports for Prisma ORM}
+// import {
+//   saveLink,
+//   findLinkByShortcode,
+//   getAllLinks,
+//   incrementClicks,
+// } from "../Models/urlModelPrisma.model.js";
+
+// {This imports for Drizzle ORM}
 import {
   saveLink,
   findLinkByShortcode,
   getAllLinks,
   incrementClicks,
-} from "../Models/urlModelPrisma.model.js";
+  deleteLink,
+  updateLink,
+} from "../Models/urlModelDrizzle.model.js";
 
 export const getAvailabledata = async (req, res) => {
   try {
@@ -55,7 +71,7 @@ export const insertNewData = async (req, res) => {
 
     // Check if shortcode is already taken
     const existing = await findLinkByShortcode(shortcode);
-    if (existing) {
+    if (existing !== null) {
       return res.status(400).json({ error: "Shortcode already exists!" });
     }
 
@@ -71,4 +87,70 @@ export const insertNewData = async (req, res) => {
     console.error("Error creating link:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
-}
+};
+
+// Delete a URL by ID
+export const deleteUrl = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ error: "URL ID is required!" });
+    }
+
+    await deleteLink(parseInt(id));
+
+    res.status(200).json({
+      message: "URL deleted successfully!",
+    });
+  } catch (error) {
+    console.error("Error deleting link:", error);
+    res.status(500).json({ error: "Failed to delete URL" });
+  }
+};
+
+// Update a URL by ID
+export const updateUrl = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { url, shortUrl } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ error: "URL ID is required!" });
+    }
+
+    if (!url && !shortUrl) {
+      return res.status(400).json({ error: "At least one field (url or shortUrl) is required!" });
+    }
+
+    // Get the existing link
+    const existingLink = await db.select().from(urlTable).where(eq(urlTable.id, parseInt(id))).limit(1);
+    
+    if (!existingLink || existingLink.length === 0) {
+      return res.status(404).json({ error: "URL not found!" });
+    }
+
+    const currentLink = existingLink[0];
+    const newUrl = url || currentLink.url;
+    const newShortCode = shortUrl || currentLink.shortCode;
+
+    // Check if new shortcode is already taken by another URL
+    if (shortUrl && shortUrl !== currentLink.shortCode) {
+      const existing = await findLinkByShortcode(shortUrl);
+      if (existing !== null) {
+        return res.status(400).json({ error: "Shortcode already exists!" });
+      }
+    }
+
+    await updateLink(parseInt(id), newUrl, newShortCode);
+
+    res.status(200).json({
+      message: "URL updated successfully!",
+      originalUrl: newUrl,
+      shortUrl: newShortCode,
+    });
+  } catch (error) {
+    console.error("Error updating link:", error);
+    res.status(500).json({ error: "Failed to update URL" });
+  }
+};
