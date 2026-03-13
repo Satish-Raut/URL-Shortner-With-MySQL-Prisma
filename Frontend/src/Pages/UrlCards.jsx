@@ -118,7 +118,7 @@ const UrlCards = ({ urls, setUrls }) => {
       try {
         const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
         const res = await axios.get(`${API_URL}/urlshortner`);
-        console.log(res);
+        // console.log(res);
 
         // Map backend database fields to frontend property names
         const mappedData = res.data.map((item) => ({
@@ -152,7 +152,7 @@ const UrlCards = ({ urls, setUrls }) => {
             <div key={url.id}>
               {editingId === url.id ? (
                 // EDIT MODAL
-                <div className="glass-card p-6 rounded-2xl border border-primary/30 space-y-4">
+                <div className="glass-card p-6 rounded-2xl border border-primary/30 space-y-4 animate-in fade-in zoom-in duration-300">
                   <h3 className="text-lg font-bold text-white mb-4">Edit URL</h3>
 
                   <div className="space-y-3">
@@ -164,7 +164,7 @@ const UrlCards = ({ urls, setUrls }) => {
                         type="url"
                         value={editUrl}
                         onChange={(e) => setEditUrl(e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white outline-none focus:border-primary/50 transition-colors"
+                        className="w-full bg-background/50 border border-border rounded-lg px-4 py-2 text-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 placeholder:text-muted/50"
                         placeholder="https://example.com"
                       />
                     </div>
@@ -177,7 +177,7 @@ const UrlCards = ({ urls, setUrls }) => {
                         type="text"
                         value={editShortUrl}
                         onChange={(e) => setEditShortUrl(e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white outline-none focus:border-primary/50 transition-colors"
+                        className="w-full bg-background/50 border border-border rounded-lg px-4 py-2 text-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 placeholder:text-muted/50"
                         placeholder="Leave empty to keep current"
                       />
                     </div>
@@ -203,7 +203,7 @@ const UrlCards = ({ urls, setUrls }) => {
               ) : (
                 // NORMAL CARD VIEW
                 <div
-                  className="glass-card p-4 sm:p-6 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border border-white/5 group hover:border-white/10 transition-all"
+                  className="glass-card p-4 sm:p-6 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border border-white/5 group hover:border-white/10 transition-all animate-in fade-in slide-in-from-right-4 duration-500 fill-mode-both"
                 >
                   {/* IDEA: URL-Details */}
                   <div className="flex-1 min-w-0 w-full">

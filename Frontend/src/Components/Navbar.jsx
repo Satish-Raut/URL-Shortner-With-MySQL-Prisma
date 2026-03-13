@@ -15,10 +15,22 @@ const Navbar = () => {
         </Link>
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-3 sm:gap-6">
+        <Link
+          to="/login"
+          className="text-sm font-medium text-muted hover:text-white transition-colors hidden sm:block"
+        >
+          Login
+        </Link>
+        <Link
+          to="/register"
+          className="text-sm font-medium text-muted hover:text-white transition-colors hidden sm:block"
+        >
+          Sign Up
+        </Link>
         <Link
           to="/urlshortner"
-          className="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl font-semibold text-sm transition-all shadow-lg shadow-primary/25 active:scale-95 cursor-pointer"
+          className="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl font-semibold text-sm transition-all shadow-lg shadow-primary/25 active:scale-95 cursor-pointer whitespace-nowrap"
         >
           Short URL
         </Link>

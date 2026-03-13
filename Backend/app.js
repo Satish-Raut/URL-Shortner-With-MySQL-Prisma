@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import "dotenv/config";
 import { shortnerRouter } from "./Routes/urlRoutes.routes.js";
+import { authRoutes } from "./Routes/auth.routes.js";
 
 //{ NOTE: Create the Express-Server}
 const app = express();
@@ -18,6 +19,7 @@ app.use(
 );
 
 // {NOTE: The purpose of this Middleware is to define the routes}
+app.use(authRoutes);
 app.use(shortnerRouter);
 
 //{ NOTE: Finally listen the app at a particular port}

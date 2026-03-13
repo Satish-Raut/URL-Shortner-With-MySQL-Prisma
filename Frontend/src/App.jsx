@@ -1,8 +1,11 @@
-import React from "react";
+
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Home from "./Pages/Home";
 import URLShortner from "./Pages/URLShortner";
 import Landing from "./Pages/Landing";
+import { Toaster } from "react-hot-toast";
+import LoginPage from "./Components/Auth/LoginPage";
+import RegisterPage from "./Components/Auth/RegisterPage";
 
 const router = createBrowserRouter([
   {
@@ -17,11 +20,17 @@ const router = createBrowserRouter([
         path: "urlshortner",
         element: <URLShortner />,
       },
+      {
+        path: "login",
+        element: <LoginPage/>,
+      },
+      {
+        path: "register",
+        element: <RegisterPage />,
+      },
     ],
   },
 ]);
-
-import { Toaster } from "react-hot-toast";
 
 const App = () => {
   return (

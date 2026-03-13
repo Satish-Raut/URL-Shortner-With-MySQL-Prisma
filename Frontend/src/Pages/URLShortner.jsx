@@ -52,19 +52,19 @@ const URLShortner = () => {
   };
 
   return (
-    <section className="pt-32 pb-20 px-6 min-h-[calc(100vh-80px)] text-white">
+    <section className="pt-32 pb-20 px-6 min-h-screen text-white animate-in fade-in duration-700">
       <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">
+        <div className="text-center mb-12 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100 fill-mode-both">
+          <h1 className="text-5xl font-extrabold mb-4 tracking-tight">
             Create Your <span className="text-gradient">Short Link</span>
           </h1>
-          <p className="text-muted text-lg">
+          <p className="text-muted text-lg max-w-lg mx-auto">
             Enter your long URL and choose a custom path if you want.
           </p>
         </div>
 
         {/* Form Section */}
-        <div className="glass-card p-8 rounded-3xl shadow-2xl border border-white/5 mb-12">
+        <div className="glass-card p-10 rounded-3xl shadow-2xl border border-white/5 mb-16 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200 fill-mode-both">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
               {/*IDEA: Original URL Input box */}
@@ -76,7 +76,7 @@ const URLShortner = () => {
                   type="url"
                   required
                   placeholder="https://example.com/very-long-link"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors"
+                  className="w-full bg-background/50 border border-border rounded-xl px-4 py-3 text-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 placeholder:text-muted/50"
                   value={originalUrl}
                   onChange={(e) => setOriginalUrl(e.target.value)}
                 />
@@ -87,14 +87,14 @@ const URLShortner = () => {
                 <label className="text-sm font-semibold text-muted ml-1">
                   Custom Link (Optional)
                 </label>
-                <div className="flex items-center bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus-within:border-primary/50 transition-colors">
-                  <span className="text-muted text-sm border-r border-white/10 pr-3 mr-3">
+                <div className="flex items-center bg-background/50 border border-border rounded-xl px-4 py-3 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all duration-300">
+                  <span className="text-muted text-sm border-r border-border pr-3 mr-3 font-medium">
                     url.short/
                   </span>
                   <input
                     type="text"
                     placeholder="my-link"
-                    className="flex-1 bg-transparent border-none outline-none text-white"
+                    className="flex-1 bg-transparent border-none outline-none text-white placeholder:text-muted/50"
                     value={customTail}
                     onChange={(e) => setCustomTail(e.target.value)}
                   />
@@ -106,7 +106,7 @@ const URLShortner = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`cursor-pointer w-full py-4 bg-primary hover:bg-primary-hover text-white rounded-xl font-bold text-lg transition-all shadow-xl shadow-primary/30 active:scale-95 flex items-center justify-center gap-2 ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""}`}
+              className={`cursor-pointer w-full py-4 bg-primary hover:bg-primary-hover text-white rounded-xl font-bold text-lg transition-all duration-300 shadow-xl shadow-primary/20 active:scale-[0.98] transform hover:scale-[1.01] flex items-center justify-center gap-2 ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""}`}
             >
               {isSubmitting ? (
                 <>
