@@ -48,7 +48,8 @@ const LoginPage = () => {
           </p>
         </div>
 
-        <form className="space-y-6" onSubmit={(e) =>handleSubmit(e)}>
+        {/* React automatically passes the event to handleSubmit function. */}
+        <form className="space-y-6" onSubmit={handleSubmit}>  
           <div className="space-y-2 staggered-reveal [animation-delay:0.4s]">
             <label className="text-sm font-medium ml-1" htmlFor="email">
               Email Address

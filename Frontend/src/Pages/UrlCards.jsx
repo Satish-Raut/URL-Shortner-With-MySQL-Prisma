@@ -24,15 +24,20 @@ const UrlCards = ({ urls, setUrls }) => {
 
   const handleDeleteUrl = (id) => {
     toast((t) => (
-      <span>
-        Are you sure you want to delete this URL?
-        <div style={{ marginTop: "10px" }}>
+      <span className="flex flex-col gap-4 text-sm text-gray-700">
+        <p className="font-medium text-gray-800">
+          Are you sure you want to delete this URL?
+        </p>
+
+        <div className="flex justify-end gap-3 mt-2">
           <button
+            className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white font-medium transition duration-200 cursor-pointer"
             onClick={async () => {
               toast.dismiss(t.id);
               try {
                 setIsLoading(true);
-                const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+                const API_URL =
+                  import.meta.env.VITE_API_URL || "http://localhost:3000";
 
                 await axios.delete(`${API_URL}/${id}`);
 
@@ -50,12 +55,12 @@ const UrlCards = ({ urls, setUrls }) => {
               }
             }}
           >
-            Yes
+            Yes, Delete
           </button>
 
           <button
             onClick={() => toast.dismiss(t.id)}
-            style={{ marginLeft: "10px" }}
+            className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 text-gray-700 transition duration-200 cursor-pointer"
           >
             Cancel
           </button>
@@ -65,6 +70,7 @@ const UrlCards = ({ urls, setUrls }) => {
   };
 
   const handleEditClick = (url) => {
+    console.log(url)
     setEditingId(url.id);
     setEditUrl(url.originalUrl);
     setEditShortUrl(url.shortUrl);
@@ -79,10 +85,12 @@ const UrlCards = ({ urls, setUrls }) => {
     try {
       setIsLoading(true);
       const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      // Send the request to server to update the data in the backend database
       const response = await axios.put(`${API_URL}/${editingId}`, {
         url: editUrl,
         shortUrl: editShortUrl || undefined,
       });
+
 
       setUrls(urls.map(url =>
         url.id === editingId
@@ -113,6 +121,7 @@ const UrlCards = ({ urls, setUrls }) => {
     setEditShortUrl("");
   };
 
+  // This is used to fetch the data from the backend database
   useEffect(() => {
     const fetchUrls = async () => {
       try {
@@ -155,7 +164,9 @@ const UrlCards = ({ urls, setUrls }) => {
                 <div className="glass-card p-6 rounded-2xl border border-primary/30 space-y-4 animate-in fade-in zoom-in duration-300">
                   <h3 className="text-lg font-bold text-white mb-4">Edit URL</h3>
 
+                  {/* Input Fields */}
                   <div className="space-y-3">
+                    {/* handle Original URL */}
                     <div>
                       <label className="text-sm font-semibold text-muted block mb-2">
                         Original URL
@@ -169,9 +180,10 @@ const UrlCards = ({ urls, setUrls }) => {
                       />
                     </div>
 
+                    {/* Handle The ShortCode URL */}
                     <div>
                       <label className="text-sm font-semibold text-muted block mb-2">
-                        Short Code (Optional)
+                        Short Code
                       </label>
                       <input
                         type="text"
@@ -181,6 +193,7 @@ const UrlCards = ({ urls, setUrls }) => {
                         placeholder="Leave empty to keep current"
                       />
                     </div>
+
                   </div>
 
                   <div className="flex gap-3 pt-4">
@@ -256,7 +269,9 @@ const UrlCards = ({ urls, setUrls }) => {
                             />
                           </svg>
                         )}
+
                       </button>
+
                     </div>
 
                     {/* Original URL */}
@@ -274,7 +289,7 @@ const UrlCards = ({ urls, setUrls }) => {
                       <p className="text-xl font-bold text-white">{url.clicks}</p>
                     </div>
 
-                    {/* IDEA: Current date showing */}
+                    {/* IDEA: the date of short-url creation showing */}
                     <div className="text-center md:text-right">
                       <p className="text-[10px] uppercase tracking-wider text-muted font-bold mb-1">
                         Date
@@ -286,10 +301,12 @@ const UrlCards = ({ urls, setUrls }) => {
 
                     {/* Action Buttons */}
                     <div className="flex gap-2 ml-auto md:ml-4">
+
+                      {/* update the url */}
                       <button
                         onClick={() => handleEditClick(url)}
                         disabled={isLoading}
-                        className="p-2 hover:bg-blue-500/20 text-blue-400 rounded-lg transition-colors disabled:opacity-50"
+                        className="p-2 hover:bg-blue-500/20 text-blue-400 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
                         title="Edit URL"
                       >
                         <svg
@@ -306,10 +323,12 @@ const UrlCards = ({ urls, setUrls }) => {
                           />
                         </svg>
                       </button>
+
+                      {/* Delete the url */}
                       <button
                         onClick={() => handleDeleteUrl(url.id)}
                         disabled={isLoading}
-                        className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors disabled:opacity-50"
+                        className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
                         title="Delete URL"
                       >
                         <svg
@@ -326,8 +345,10 @@ const UrlCards = ({ urls, setUrls }) => {
                           />
                         </svg>
                       </button>
+
                     </div>
                   </div>
+
                 </div>
               )}
             </div>

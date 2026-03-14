@@ -19,7 +19,7 @@ const RegisterPage = () => {
 
     try {
       const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
-      const response = await axios.post(`${API_URL}/register`, formData);
+      const response = await axios.post(`${API_URL}/register`, formData);   // Get the backend responce here
 
       if (response.data.success) {
         toast.success(response.data.message, { id: loadingToast });

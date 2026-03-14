@@ -123,9 +123,10 @@ export const updateUrl = async (req, res) => {
       return res.status(400).json({ error: "At least one field (url or shortUrl) is required!" });
     }
 
+    // {Validate the request id is exst in the database or not}
     // Get the existing link
     const existingLink = await db.select().from(urlTable).where(eq(urlTable.id, parseInt(id))).limit(1);
-    
+    console.log(existingLink)
     if (!existingLink || existingLink.length === 0) {
       return res.status(404).json({ error: "URL not found!" });
     }
@@ -134,7 +135,7 @@ export const updateUrl = async (req, res) => {
     const newUrl = url || currentLink.url;
     const newShortCode = shortUrl || currentLink.shortCode;
 
-    // Check if new shortcode is already taken by another URL
+    // {Check if new shortcode is already taken by another URL}
     if (shortUrl && shortUrl !== currentLink.shortCode) {
       const existing = await findLinkByShortcode(shortUrl);
       if (existing !== null) {
