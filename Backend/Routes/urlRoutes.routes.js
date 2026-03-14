@@ -8,19 +8,21 @@ import {
   updateUrl,
 } from "../Controllers/urlController.js";
 
+import { requireAuth } from "../Middleware/auth.middleware.js";
+
 const router = Router();
 
 // Route to fetch all shortened URLs (for initial frontend load)
-router.get("/urlshortner", getAvailabledata);
+router.get("/urlshortner", requireAuth, getAvailabledata);
 
 // Route to add a new shortened URL to the database
-router.post("/", insertNewData);
+router.post("/", requireAuth, insertNewData);
 
 // Route to update a URL by ID
-router.put("/:id", updateUrl);
+router.put("/:id", requireAuth, updateUrl);
 
 // Route to delete a URL by ID
-router.delete("/:id", deleteUrl);
+router.delete("/:id", requireAuth, deleteUrl);
 
 // Route to handle URL redirection (must be last)
 router.get("/:shortcode", redirectToURL);

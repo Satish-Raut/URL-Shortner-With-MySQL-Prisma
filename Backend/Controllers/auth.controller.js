@@ -1,13 +1,18 @@
+export const getRegisterPage = (req, res) => {
+  res.render("auth/register");
+};
 
-export const getRegisterPage = (req, res) =>{
-    res.render("auth/register")
-}
+export const getLoginPage = (req, res) => {
+  res.render("auth/login");
+};
 
-export const getLoginPage = (req, res) =>{
-    res.render("auth/login")
-}
+export const postLogin = (req, res) => {
+  // {1. Manual method}
+  // res.setHeader("Set-Cookie", "isLoggedIn=true; path=/;");
 
-export const getLoginPost = (req, res) => {
+  // {2. Using Cookie Parser}
+  res.cookie("isLoggedIn", true)
+
   // Backend controls where the user goes after success
   res.status(200).json({
     success: true,
@@ -17,7 +22,7 @@ export const getLoginPost = (req, res) => {
   });
 };
 
-export const getRegisterPost = (req, res) => {
+export const postRegister = (req, res) => {
   // Backend controls where the user goes after success
   res.status(200).json({
     success: true,
@@ -26,4 +31,3 @@ export const getRegisterPost = (req, res) => {
     user: { email: req.body.email },
   });
 };
-

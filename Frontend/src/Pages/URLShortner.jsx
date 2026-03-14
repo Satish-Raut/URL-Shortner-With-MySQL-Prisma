@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import UrlCards from "./UrlCards";
 import { toast } from "react-hot-toast";
+import HomeAnimatedBackground from "../Components/HomeAnimatedBackground";
 
 const URLShortner = () => {
   const [urls, setUrls] = useState([]);
@@ -24,7 +25,9 @@ const URLShortner = () => {
       console.log("Data at Frontend:", data);
 
       const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
-      const res = await axios.post(`${API_URL}`, data);
+      const res = await axios.post(`${API_URL}`, data, {
+        withCredentials: true,
+      });
 
       console.log("Response from Backend:", res.data);
 
@@ -52,7 +55,8 @@ const URLShortner = () => {
   };
 
   return (
-    <section className="pt-32 pb-20 px-6 min-h-screen text-white animate-in fade-in duration-700">
+    <section className="pt-32 pb-20 px-6 min-h-screen text-white z-0 animate-in fade-in duration-700 relative">
+      <HomeAnimatedBackground />
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100 fill-mode-both">
           <h1 className="text-5xl font-extrabold mb-4 tracking-tight">

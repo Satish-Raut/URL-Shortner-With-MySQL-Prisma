@@ -39,7 +39,9 @@ const UrlCards = ({ urls, setUrls }) => {
                 const API_URL =
                   import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-                await axios.delete(`${API_URL}/${id}`);
+                await axios.delete(`${API_URL}/${id}`, {
+                  withCredentials: true,
+                });
 
                 setUrls((prev) => prev.filter((url) => url.id !== id));
 
@@ -89,6 +91,8 @@ const UrlCards = ({ urls, setUrls }) => {
       const response = await axios.put(`${API_URL}/${editingId}`, {
         url: editUrl,
         shortUrl: editShortUrl || undefined,
+      }, {
+        withCredentials: true,
       });
 
 
@@ -126,7 +130,9 @@ const UrlCards = ({ urls, setUrls }) => {
     const fetchUrls = async () => {
       try {
         const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
-        const res = await axios.get(`${API_URL}/urlshortner`);
+        const res = await axios.get(`${API_URL}/urlshortner`, {
+          withCredentials: true,
+        });
         // console.log(res);
 
         // Map backend database fields to frontend property names

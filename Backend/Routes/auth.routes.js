@@ -10,11 +10,11 @@ const router = Router();
 router
   .route("/register")
   .get(authoController.getRegisterPage)
-  .post(authoController.getRegisterPost);
+  .post(authoController.postRegister);
 
 router
   .route("/login")
   .get(authoController.getLoginPage)
-  .post(authoController.getLoginPost);
+  .post(authoController.postLogin);
 
 export const authRoutes = router;

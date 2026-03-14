@@ -3,6 +3,7 @@ import cors from "cors";
 import "dotenv/config";
 import { shortnerRouter } from "./Routes/urlRoutes.routes.js";
 import { authRoutes } from "./Routes/auth.routes.js";
+import cookieParser from "cookie-parser";
 
 //{ NOTE: Create the Express-Server}
 const app = express();
@@ -15,8 +16,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
     origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    credentials: true,
   }),
 );
+
+// {Cookie Parser middleware}
+app.use(cookieParser());
 
 // {NOTE: The purpose of this Middleware is to define the routes}
 app.use(authRoutes);
