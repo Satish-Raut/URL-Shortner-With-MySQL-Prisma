@@ -16,7 +16,7 @@ const RegisterPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const loadingToast = toast.loading("Signing in...");
+    const loadingToast = toast.loading("Creating account...");
 
     try {
       const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
@@ -35,10 +35,19 @@ const RegisterPage = () => {
       }
     } catch (error) {
       console.error("Login Error:", error);
-      toast.error(
-        error.response?.data?.message || "An error occurred during register",
-        { id: loadingToast },
-      );
+
+      // Handle known backend responses attached to an error (like 409 Conflict)
+      // `if already existed data is entered by user for login the backend send this response`
+
+      if (error.response && error.response.status === 409 && error.response.data.redirectTo) {
+        toast.error(error.response.data.message || "Account already exists.", { id: loadingToast });
+        navigate(error.response.data.redirectTo);
+      } else {
+        toast.error(
+          error.response?.data?.message || "An error occurred during register",
+          { id: loadingToast },
+        );
+      }
     }
   };
 
@@ -47,17 +56,17 @@ const RegisterPage = () => {
     <div className="min-h-screen flex items-center justify-center p-4 pt-32 pb-12 overflow-x-hidden relative">
       <AnimatedBackground />
       <div className="glass-card w-full max-w-5xl flex flex-col md:flex-row-reverse rounded-2xl shadow-2xl auth-card-entrance overflow-hidden">
-        
+
         {/* Image Section */}
         <div className="hidden md:block md:w-1/2 relative bg-primary/10">
-          <img 
-            src="/images/register-bg.png" 
-            alt="Register Illustration" 
+          <img
+            src="/images/register-bg.png"
+            alt="Register Illustration"
             className="absolute inset-0 w-full h-full object-cover object-center"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent flex flex-col justify-end p-8 staggered-reveal [animation-delay:0.8s]">
-             <h2 className="text-3xl font-bold text-white mb-2 drop-shadow-md">Join Us Today!</h2>
-             <p className="text-white/80 drop-shadow-sm">Create an account to start managing your shortened URLs, tracking analytics, and more.</p>
+            <h2 className="text-3xl font-bold text-white mb-2 drop-shadow-md">Join Us Today!</h2>
+            <p className="text-white/80 drop-shadow-sm">Create an account to start managing your shortened URLs, tracking analytics, and more.</p>
           </div>
         </div>
 
@@ -84,7 +93,7 @@ const RegisterPage = () => {
                 className="w-full px-4 py-3 rounded-xl bg-background/50 border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 outline-none placeholder:text-muted/50"
                 required
                 value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               />
             </div>
 
@@ -99,7 +108,7 @@ const RegisterPage = () => {
                 className="w-full px-4 py-3 rounded-xl bg-background/50 border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 outline-none placeholder:text-muted/50"
                 required
                 value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               />
             </div>
 
@@ -114,7 +123,7 @@ const RegisterPage = () => {
                 className="w-full px-4 py-3 rounded-xl bg-background/50 border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 outline-none placeholder:text-muted/50"
                 required
                 value={formData.password}
-                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               />
             </div>
 
@@ -132,7 +141,7 @@ const RegisterPage = () => {
                 className="w-full px-4 py-3 rounded-xl bg-background/50 border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 outline-none placeholder:text-muted/50"
                 required
                 value={formData.confirm_password}
-                onChange={(e) => setFormData({...formData, confirm_password: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, confirm_password: e.target.value })}
               />
             </div>
 

@@ -91,14 +91,14 @@ const URLShortner = () => {
                 <label className="text-sm font-semibold text-muted ml-1">
                   Custom Link (Optional)
                 </label>
-                <div className="flex items-center bg-background/50 border border-border rounded-xl px-4 py-3 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all duration-300">
-                  <span className="text-muted text-sm border-r border-border pr-3 mr-3 font-medium">
+                <div className="flex flex-col sm:flex-row bg-background/50 border border-border rounded-xl px-4 py-3 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all duration-300">
+                  <span className="text-muted text-sm border-b sm:border-b-0 sm:border-r border-border pb-2 mb-2 sm:pb-0 sm:mb-0 sm:pr-3 sm:mr-3 font-medium flex items-center">
                     url.short/
                   </span>
                   <input
                     type="text"
                     placeholder="my-link"
-                    className="flex-1 bg-transparent border-none outline-none text-white placeholder:text-muted/50"
+                    className="flex-1 bg-transparent border-none outline-none text-white placeholder:text-muted/50 w-full"
                     value={customTail}
                     onChange={(e) => setCustomTail(e.target.value)}
                   />

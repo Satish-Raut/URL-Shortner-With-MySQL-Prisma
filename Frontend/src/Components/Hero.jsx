@@ -5,10 +5,7 @@ const Hero = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="relative pt-32 pb-20 px-6 overflow-hidden h-screen">
-      {/* Background Glows */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-gradient-to-b from-primary/10 to-transparent -z-10 blur-3xl opacity-50 rounded-full" />
-      <div className="absolute top-1/4 -right-20 w-80 h-80 bg-secondary/10 -z-10 blur-3xl opacity-30 rounded-full" />
+    <section className="relative pt-32 pb-20 px-6 overflow-hidden min-h-screen flex items-center justify-center">
 
       <div className="max-w-5xl mx-auto text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-wider mb-6 animate-fade-in">

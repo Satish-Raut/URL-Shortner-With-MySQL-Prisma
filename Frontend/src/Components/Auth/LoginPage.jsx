@@ -32,10 +32,17 @@ const LoginPage = () => {
       }
     } catch (error) {
       console.error("Login Error:", error);
-      toast.error(
-        error.response?.data?.message || "An error occurred during login",
-        { id: loadingToast },
-      );
+      
+      // Handle known backend responses attached to an error (like 404 Not Found)
+      if (error.response && error.response.status === 404 && error.response.data.redirectTo) {
+        toast.error(error.response.data.message || "Account not found.", { id: loadingToast });
+        navigate(error.response.data.redirectTo);
+      } else {
+        toast.error(
+          error.response?.data?.message || "An error occurred during login",
+          { id: loadingToast },
+        );
+      }
     }
   };
 

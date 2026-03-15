@@ -1,3 +1,5 @@
+import { getUserByEmail, saveUserdata } from "../Models/usersModel.model.js";
+
 export const getRegisterPage = (req, res) => {
   res.render("auth/register");
 };
@@ -6,23 +8,62 @@ export const getLoginPage = (req, res) => {
   res.render("auth/login");
 };
 
-export const postLogin = (req, res) => {
-  // {1. Manual method}
-  // res.setHeader("Set-Cookie", "isLoggedIn=true; path=/;");
+export const postLogin = async (req, res) => {
+  // {1. Verify the data given by the user i.e already regesterd or not}
+  const { email, password } = req.body;
+  const [validUser] = await getUserByEmail({ email });
 
-  // {2. Using Cookie Parser}
-  res.cookie("isLoggedIn", true)
+  console.log("Logged In Valid User:", validUser);
 
-  // Backend controls where the user goes after success
-  res.status(200).json({
-    success: true,
-    message: "Logged in successfully",
-    redirectTo: "/", // The backend "decides" the destination
-    user: { email: req.body.email },
-  });
+  // {2. If the user already registered then redirect to Home page}
+  if (validUser) {
+    // {3. Verify the password matches here before logging them in!}
+    if(validUser.password !== password) {
+      return res.status(401).json({
+        success: false,
+        message: "Incorrect password. Please try again."
+      });
+    }
+
+    //{4. Set the cookie only upon successful login}
+    res.cookie("isLoggedIn", true);
+
+    return res.status(200).json({
+      success: true,
+      message: "Logged in successfully",
+      redirectTo: "/", // redirect to home page
+      user: { email: email },
+    });
+  } else {   //{4. Otherwise redirect them to registration page}
+    // A 404 Not Found error tells the frontend the resource (user) doesn't exist
+    return res.status(404).json({
+      success: false,
+      message: "Account not found. Please create an account.",
+      redirectTo: "/register"
+    });
+  }
 };
 
-export const postRegister = (req, res) => {
+export const postRegister = async (req, res) => {
+  // {1. Get the data from the user}
+  const { name, email, password } = req.body;
+
+  // {2. Verify the details and check that the already exist or not}
+  const userExists = await getUserByEmail({ email });
+  console.log("userExists", userExists);
+
+  // {3. If the user already exist then redirect to Login page}
+  if (userExists.length !== 0) {
+    return res.status(409).json({
+      success: false,
+      message: "You have already registered.",
+      redirectTo: "/login",
+    });
+  }
+
+  // {4. If the user is not exist then store data in database}
+  await saveUserdata({ name, email, password });
+
   // Backend controls where the user goes after success
   res.status(200).json({
     success: true,
