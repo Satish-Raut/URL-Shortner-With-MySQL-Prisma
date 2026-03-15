@@ -1,4 +1,9 @@
-import { getUserByEmail, saveUserdata } from "../Models/usersModel.model.js";
+import {
+  comparePassword,
+  getUserByEmail,
+  hashPassword,
+  saveUserdata,
+} from "../Models/usersModel.model.js";
 
 export const getRegisterPage = (req, res) => {
   res.render("auth/register");
@@ -18,10 +23,21 @@ export const postLogin = async (req, res) => {
   // {2. If the user already registered then redirect to Home page}
   if (validUser) {
     // {3. Verify the password matches here before logging them in!}
-    if(validUser.password !== password) {
+    let isPasswordValid = false;
+    try {
+      isPasswordValid = await comparePassword(password, validUser.password);
+    } catch (error) {
+      // Fallback: If argon2 fails (e.g. "pchstr must contain a $ as first char"),
+      // it means the database has an old plaintext password that wasn't hashed.
+      if (validUser.password === password) {
+        isPasswordValid = true;
+      }
+    }
+
+    if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
-        message: "Incorrect password. Please try again."
+        message: "Incorrect password. Please try again.",
       });
     }
 
@@ -34,12 +50,13 @@ export const postLogin = async (req, res) => {
       redirectTo: "/", // redirect to home page
       user: { email: email },
     });
-  } else {   //{4. Otherwise redirect them to registration page}
+  } else {
+    //{4. Otherwise redirect them to registration page}
     // A 404 Not Found error tells the frontend the resource (user) doesn't exist
     return res.status(404).json({
       success: false,
       message: "Account not found. Please create an account.",
-      redirectTo: "/register"
+      redirectTo: "/register",
     });
   }
 };
@@ -62,7 +79,8 @@ export const postRegister = async (req, res) => {
   }
 
   // {4. If the user is not exist then store data in database}
-  await saveUserdata({ name, email, password });
+  const hashedPassword = await hashPassword(password); // Before storing hash the password
+  await saveUserdata({ name, email, password: hashedPassword });
 
   // Backend controls where the user goes after success
   res.status(200).json({

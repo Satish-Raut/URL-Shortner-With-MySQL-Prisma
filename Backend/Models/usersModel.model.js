@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "../Config/drizzleDB.js";
 import { userTable } from "../Drizzle/schema.js";
+import argon2 from "argon2";
 
 // * New user data inserted into the database *
 export const saveUserdata = async ({ name, email, password }) => {
@@ -19,8 +20,17 @@ export const getUserByEmail = async ({ email }) => {
     .from(userTable)
     .where(eq(userTable.email, email));
 
-//   console.log(userData);
+  //   console.log(userData);
   return userData;
 };
 
-// * Login the user *
+// * Hash the Password *
+export const hashPassword = async (password) => {
+  return await argon2.hash(password);
+};
+
+// * Compare the users give password with hashed password stored in database*
+// Syntax: argon2.verify(hashedPassword, password)
+export const comparePassword = async (password, hashedPassword) => {
+  return await argon2.verify(hashedPassword, password);
+};
