@@ -3,8 +3,10 @@ import axios from "axios";
 import UrlCards from "./UrlCards";
 import { toast } from "react-hot-toast";
 import HomeAnimatedBackground from "../Components/HomeAnimatedBackground";
+import { useNavigate } from "react-router";
 
 const URLShortner = () => {
+  const navigate = useNavigate()
   const [urls, setUrls] = useState([]);
   const [originalUrl, setOriginalUrl] = useState("");
   const [customTail, setCustomTail] = useState("");
@@ -49,6 +51,9 @@ const URLShortner = () => {
       const errorMessage =
         error.response?.data?.error || "Failed to shorten URL";
       toast.error(errorMessage);
+      
+      // Redirect to login page for login 
+      navigate("/login");
     } finally {
       setIsSubmitting(false);
     }

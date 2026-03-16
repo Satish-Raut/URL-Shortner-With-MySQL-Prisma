@@ -9,12 +9,17 @@ const router = Router();
 
 router
   .route("/register")
-  .get(authoController.getRegisterPage)
+  // .get(authoController.getRegisterPage)
   .post(authoController.postRegister);
 
 router
   .route("/login")
-  .get(authoController.getLoginPage)
+  // .get(authoController.getLoginPage)
   .post(authoController.postLogin);
 
+// Route to check the user is logged in or not (Used for logout feature handling at Frontend)
+router.get("/auth/me", authoController.getCurrentUser );
+
+// Logout the user
+router.post("/logout", authoController.logoutUser);
 export const authRoutes = router;

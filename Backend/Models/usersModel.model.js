@@ -24,6 +24,17 @@ export const getUserByEmail = async ({ email }) => {
   return userData;
 };
 
+// * get the user data by their id *
+export const getUserById = async ({ id }) => {
+  const userData = await db
+    .select()
+    .from(userTable)
+    .where(eq(userTable.id, id));
+
+  //   console.log(userData);
+  return userData;
+};
+
 // * Hash the Password *
 export const hashPassword = async (password) => {
   return await argon2.hash(password);

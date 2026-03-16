@@ -1,17 +1,20 @@
 import {
   comparePassword,
   getUserByEmail,
+  getUserById,
   hashPassword,
   saveUserdata,
 } from "../Models/usersModel.model.js";
 
-export const getRegisterPage = (req, res) => {
-  res.render("auth/register");
-};
+// "Both the get page are handled by the Frontend"
 
-export const getLoginPage = (req, res) => {
-  res.render("auth/login");
-};
+// export const getRegisterPage = (req, res) => {
+//   res.render("auth/register");
+// };
+
+// export const getLoginPage = (req, res) => {
+//   res.render("auth/login");
+// };
 
 export const postLogin = async (req, res) => {
   // {1. Verify the data given by the user i.e already regesterd or not}
@@ -42,7 +45,9 @@ export const postLogin = async (req, res) => {
     }
 
     //{4. Set the cookie only upon successful login}
-    res.cookie("isLoggedIn", true);
+    res.cookie("isLoggedIn", true); // Login Status
+    res.cookie("userId", validUser.id); // To know which user logged In
+    console.log("cookie is saved in the browser");
 
     return res.status(200).json({
       success: true,
@@ -89,4 +94,48 @@ export const postRegister = async (req, res) => {
     redirectTo: "/login", // The backend "decides" the destination
     user: { email: req.body.email },
   });
+};
+
+export const getCurrentUser = async (req, res) => {
+  try {
+    const isLoggedIn = req.cookies.isLoggedIn;
+    const userId = req.cookies.userId;
+
+    if (isLoggedIn !== "true" || !userId) {
+      return res.json({ loggedIn: false });
+    }
+
+    const [user] = await getUserById({ id: Number(userId) });
+
+    if (!user) {
+      return res.json({ loggedIn: false });
+    }
+
+    return res.json({
+      loggedIn: true,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    res.status(500).json({ error: "Server Error" });
+  }
+};
+
+export const logoutUser = async (req, res) => {
+  try {
+    res.clearCookie("isLoggedIn");
+    res.clearCookie("userId");
+
+    return res.json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({ error: "Server Error" });
+  }
 };

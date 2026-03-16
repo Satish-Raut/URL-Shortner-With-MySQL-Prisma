@@ -18,15 +18,22 @@ const LoginPage = () => {
     const loadingToast = toast.loading("Signing in...");
 
     try {
+      // {Get th Url of Server(Backend) to which we make request from the env file}
       const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
+      //{ Now get send the details to the backend for varification and get the responce}
       const response = await axios.post(`${API_URL}/login`, formData, {
         withCredentials: true,
       });
+
 
       if (response.data.success) {
         toast.success(response.data.message, { id: loadingToast });
         // Follow the backend's redirection command
         navigate(response.data.redirectTo || "/");
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       } else {
         toast.error(response.data.message || "Login failed", {
           id: loadingToast,
@@ -34,8 +41,8 @@ const LoginPage = () => {
       }
     } catch (error) {
       console.error("Login Error:", error);
-      
-      // Handle known backend responses attached to an error (like 404 Not Found)
+
+      // Handle known backend responses attached to an error (like 404 Not Found)->{if the user not registered redirect him to Registration Page}
       if (error.response && error.response.status === 404 && error.response.data.redirectTo) {
         toast.error(error.response.data.message || "Account not found.", { id: loadingToast });
         navigate(error.response.data.redirectTo);
@@ -52,17 +59,17 @@ const LoginPage = () => {
     <div className="min-h-screen flex items-center justify-center p-4 pt-32 pb-12 overflow-x-hidden relative">
       <AnimatedBackground />
       <div className="glass-card w-full max-w-4xl flex flex-col md:flex-row rounded-2xl shadow-2xl auth-card-entrance overflow-hidden">
-        
+
         {/* Image Section */}
         <div className="hidden md:block md:w-1/2 relative bg-primary/10">
-          <img 
-            src="/images/login-bg.png" 
-            alt="Login Illustration" 
+          <img
+            src="/images/login-bg.png"
+            alt="Login Illustration"
             className="absolute inset-0 w-full h-full object-cover object-center"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent flex flex-col justify-end p-8 staggered-reveal [animation-delay:0.8s]">
-             <h2 className="text-3xl font-bold text-white mb-2 drop-shadow-md">Welcome Back!</h2>
-             <p className="text-white/80 drop-shadow-sm">Ready to shorten more links and track your audience? Access your dashboard now.</p>
+            <h2 className="text-3xl font-bold text-white mb-2 drop-shadow-md">Welcome Back!</h2>
+            <p className="text-white/80 drop-shadow-sm">Ready to shorten more links and track your audience? Access your dashboard now.</p>
           </div>
         </div>
 
@@ -78,7 +85,7 @@ const LoginPage = () => {
           </div>
 
           {/* React automatically passes the event to handleSubmit function. */}
-          <form className="space-y-6" onSubmit={handleSubmit}>  
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-2 staggered-reveal [animation-delay:0.4s]">
               <label className="text-sm font-medium ml-1" htmlFor="email">
                 Email Address
@@ -97,6 +104,7 @@ const LoginPage = () => {
             </div>
 
             <div className="space-y-2 staggered-reveal [animation-delay:0.5s]">
+              {/* TODO:" Handle The forgot Password" */}
               <div className="flex items-center justify-between ml-1">
                 <label className="text-sm font-medium" htmlFor="password">
                   Password
@@ -108,6 +116,8 @@ const LoginPage = () => {
                   Forgot password?
                 </a>
               </div>
+
+              {/* {Password Field} */}
               <div className="relative">
                 <input
                   id="password"
