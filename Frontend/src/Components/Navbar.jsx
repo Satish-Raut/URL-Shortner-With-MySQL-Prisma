@@ -160,7 +160,6 @@ const Navbar = () => {
             </>
           ) : (
 
-
             <div className="relative">
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}

@@ -1,10 +1,14 @@
+import jwt from "jsonwebtoken";
 import {
-  comparePassword,
   getUserByEmail,
   getUserById,
-  hashPassword,
   saveUserdata,
 } from "../Models/usersModel.model.js";
+import {
+  comparePassword,
+  generateTocken,
+  hashPassword,
+} from "../Services/auth.service.js";
 
 // "Both the get page are handled by the Frontend"
 
@@ -40,14 +44,31 @@ export const postLogin = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
-        message: "Incorrect password. Please try again.",
+        message: "Incorrect email & password. Please try again.",
       });
     }
 
+    // "----💡 Session Authentication Approach-------"
     //{4. Set the cookie only upon successful login}
-    res.cookie("isLoggedIn", true); // Login Status
-    res.cookie("userId", validUser.id); // To know which user logged In
-    console.log("cookie is saved in the browser");
+    // res.cookie("isLoggedIn", true); // Login Status
+    // res.cookie("userId", validUser.id); // To know which user logged In
+    // console.log("cookie is saved in the browser");
+
+    // "---- 🚀 JWT Authentication Approach-------"
+    // { i. Define the token }
+    const token = generateTocken({
+      id: validUser.id,
+      name: validUser.name,
+      email: validUser.email,
+    });
+
+    // { ii. Set the cookie here with a token }
+    res.cookie("access_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
 
     return res.status(200).json({
       success: true,
@@ -96,20 +117,50 @@ export const postRegister = async (req, res) => {
   });
 };
 
+// "----💡 Session Authentication Approach-------"
+// export const getCurrentUser = async (req, res) => {
+//   try {
+//     const isLoggedIn = req.cookies.isLoggedIn;
+//     const userId = req.cookies.userId;
+
+//     if (isLoggedIn !== "true" || !userId) {
+//       return res.json({ loggedIn: false });
+//     }
+
+//     const [user] = await getUserById({ id: Number(userId) });
+
+//     if (!user) {
+//       return res.json({ loggedIn: false });
+//     }
+
+//     return res.json({
+//       loggedIn: true,
+//       user: {
+//         id: user.id,
+//         name: user.name,
+//         email: user.email,
+//       },
+//     });
+//   } catch (error) {
+//     console.error("Error fetching user:", error);
+//     res.status(500).json({ error: "Server Error" });
+//   }
+// };
+
+// "---- 🚀 JWT Authentication Approach-------"
 export const getCurrentUser = async (req, res) => {
   try {
-    const isLoggedIn = req.cookies.isLoggedIn;
-    const userId = req.cookies.userId;
+    const token = req.cookies.access_token;
+    if (!token) return res.json({ loggedIn: false });
 
-    if (isLoggedIn !== "true" || !userId) {
-      return res.json({ loggedIn: false });
-    }
+    // {Verify JWT tocken}
+    const decoded = jwt.verify(token, process.env.JWT_KEY);
+    console.log("Token: ", token);
+    console.log("Decoded form: ", decoded);
 
-    const [user] = await getUserById({ id: Number(userId) });
-
-    if (!user) {
-      return res.json({ loggedIn: false });
-    }
+    // {I need only the id of the user who looged in to fetch their details}
+    const [user] = await getUserById({ id: Number(decoded.id) });
+    if (!user) return res.json({ loggedIn: false });
 
     return res.json({
       loggedIn: true,
@@ -119,16 +170,19 @@ export const getCurrentUser = async (req, res) => {
         email: user.email,
       },
     });
-  } catch (error) {
-    console.error("Error fetching user:", error);
-    res.status(500).json({ error: "Server Error" });
+  } catch (err) {
+    return res.json({ loggedIn: false });
   }
 };
 
 export const logoutUser = async (req, res) => {
   try {
-    res.clearCookie("isLoggedIn");
-    res.clearCookie("userId");
+    // "----💡 Session Authentication Approach-------"
+    // res.clearCookie("isLoggedIn");
+    // res.clearCookie("userId");
+
+    // "---- 🚀 JWT Authentication Approach-------"
+    res.clearCookie("access_token");
 
     return res.json({
       success: true,

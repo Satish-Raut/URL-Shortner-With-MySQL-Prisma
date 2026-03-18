@@ -77,7 +77,7 @@ export const postLogin = (req, res) => {
 };
 ```
 
-### Cookie Security Flags Explained:
+### Cookie Security Flags Explained
 
 - `httpOnly`: When set to true, client-side JavaScript (like `document.cookie`) cannot access the cookie. This prevents Cross-Site Scripting (XSS) attacks from stealing the cookie.
 - `secure`: When set to true, the cookie is only sent over HTTPS connections (or localhost during development).
@@ -198,7 +198,7 @@ router.post("/", requireAuth, insertNewData);
 4. If they DO, `requireAuth` calls `next()`. This tells Express: _"The user is verified, continue to the `insertNewData` controller!"_
 5. If they **DO NOT** have a valid cookie, `requireAuth` sends a `401 Unauthorized` response. Express immediately stops, and the `insertNewData` controller is **never executed**, keeping your application completely secure.
 
-### Example Configuration:
+### Example Configuration
 
 In a real application (like your `urlRoutes.routes.js`), you strategically place `requireAuth` only on the routes that manage data:
 
@@ -230,3 +230,157 @@ router.get("/:shortcode", redirectToURL);
 
 export const shortnerRouter = router;
 ```
+
+---
+
+## 🔐 JWT Authentication Flow (Your Current Implementation)
+
+This section explains how JWT works in this project and what each function does.
+
+### 1. Registration (`postRegister` in `auth.controller.js`)
+
+- Receives `name`, `email`, `password` from frontend.
+- Checks if the user exists via `getUserByEmail(email)`.
+- If user exists: returns `409` (already registered).
+- If new user: hashes password with `hashPassword(password)` (argon2), saves with `saveUserdata(...)`.
+- Does not issue token here; after register user should login.
+
+### 2. Login (`postLogin` in `auth.controller.js`)
+
+- Receives `email`, `password`.
+- Finds user with `getUserByEmail(email)` and checks the first row.
+- Compares password with `comparePassword(plaintext, db_hash)`.
+  - Fallback: direct string comparison exists for backward compatibility if hashing fails.
+- On success, calls `generateTocken({id, name, email})`.
+- Sends JWT in cookie:
+
+  - ```js
+      res.cookie("access_tocken", token, 
+      { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", maxAge: 30d })
+      ```
+
+- Response includes `{ success: true, user: { email }, redirectTo: "/"}`.
+
+### 3. Token creation (`generateTocken` in `usersModel.model.js`)
+
+- Input: `{ id, name, email }`.
+- Validation: throws if `process.env.JWT_KEY` is missing.
+- Calls `jwt.sign(payload, secret, { expiresIn: "30d" })`.
+- Return: a signed JWT string.
+
+### 4. Secure route guard (`requireAuth` in `auth.middleware.js`)
+
+- Reads cookie: `req.cookies.access_tocken`.
+- If no token: return `401 Unauthorized`.
+- Verifies JWT using `jwt.verify(token, process.env.JWT_KEY)`.
+- On valid token: sets `req.user = decoded` and calls `next()` to proceed to controller.
+- On invalid/expired token: return `401 Invalid/Expired token`.
+
+### 5. Current-user check (`getCurrentUser` in `auth.controller.js`)
+
+- Reads cookie `req.cookies.access_tocken`.
+- Validates token with `jwt.verify(...)`.
+- Extracts user `id`, looks up DB with `getUserById({ id })`.
+- Responds `{ loggedIn: true, user: {id,name,email} }` or `{ loggedIn: false }` when missing/invalid.
+
+### 6. Logout (`logoutUser` in `auth.controller.js`)
+
+- Clears JWT cookie `access_tocken` (and old cookies `isLoggedIn`, `userId` for compatibility).
+- Responds with success JSON.
+
+---
+
+## 🧩 How this works end-to-end
+
+1. User submits login form in React (`LoginPage.jsx`) to `/login` with `withCredentials: true`.
+2. Backend validates credentials and responds with `Set-Cookie: access_tocken=<jwt>` (HTTP-only secure cookie).
+3. Browser stores cookie and sends it automatically on same domain requests.
+4. On protected routes (`/urlshortner`, `POST /`, `PUT /:id`, etc.), `requireAuth` checks token.
+5. If token valid, request continues; controllers can use `req.user` for user-specific logic.
+6. `Navbar` calls `/auth/me` with credentials; backend verifies token and returns user data.
+
+---
+
+## ✅ Notes and suggestions
+
+- Cookie name currently: `access_tocken` (typo). Should ideally be `access_token` everywhere for clarity.
+- You can keep legacy `isLoggedIn/userId` support for backward compatibility but prefer JWT flow.
+- In production, always use `secure: true` + HTTPS.
+- Protect `/logout` route also with `requireAuth` if desired (user should be logged in to log out cleanly).
+- You can include the token in API responses for explicit auth flows, but with HttpOnly cookie it is handled by browser automatically.
+
+---
+
+## 🧾 JWT method reference (jsonwebtoken)
+
+### `jwt.sign(payload, secretOrPrivateKey, [options])`
+
+- Purpose: generate a JSON Web Token from a payload that can be verified later.
+- Returns: signed JWT string, e.g., `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
+- Common options:
+  - `expiresIn`: token lifetime, e.g., `'30d'`, `'1h'`, `'15m'`.
+  - `issuer`, `audience`, `subject` (standard JWT claims).
+  - `algorithm`: default `HS256` (HMAC SHA-256) with secret key.
+
+```js
+import jwt from "jsonwebtoken";
+
+const payload = { id: user.id, email: user.email, name: user.name };
+const token = jwt.sign(payload, process.env.JWT_KEY, {
+  expiresIn: "30d",
+});
+```
+
+### `jwt.verify(token, secretOrPublicKey, [options])`
+
+- Purpose: verify the token was signed by your secret and is not expired/tampered.
+- Returns: decoded payload if valid (e.g., `{ id, name, email, iat, exp }`).
+- Throws on failure:
+  - `TokenExpiredError` (expired token)
+  - `JsonWebTokenError` (invalid signature or malformed token)
+  - `NotBeforeError` (token not active yet)
+
+```js
+try {
+  const decoded = jwt.verify(token, process.env.JWT_KEY);
+  // token valid; decoded includes payload claims
+} catch (error) {
+  // invalid / expired
+  console.error("JWT verify failed", error);
+}
+```
+
+### `jwt.decode(token, [options])`
+
+- Purpose: decode token payload without verifying signature (read-only, not secure). Use mainly for debugging.
+- Example:
+
+```js
+const decoded = jwt.decode(token);
+console.log(decoded); // { id: 123, email: "a@b.com", iat: 168..., exp: 171... }
+```
+> Note: in your project use `jwt.verify` for auth checks. `jwt.decode` should not replace secure verification.
+
+---
+
+## 🧩 JWT decoded object example (key/value explanation)
+
+**Decoded form**:
+```js
+{
+  id: 8,
+  name: 'Jatin',
+  email: 'Jatin@gmail.com',
+  iat: 1773810266,
+  exp: 1776402266
+}
+```
+
+- `id`: application-specific user identifier. Typically used for DB lookups or `req.user.id` usage.
+- `name`: user display name (custom claim, from signin payload).
+- `email`: user email address (custom claim, from signin payload).
+- `iat` (issued at): UNIX timestamp (seconds) when token was created.
+- `exp` (expiration): UNIX timestamp (seconds) when token becomes invalid.
+
+**In this example**: token lifespan is `exp - iat = 2592000` seconds → exactly 30 days.
+
