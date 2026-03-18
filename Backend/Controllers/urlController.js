@@ -31,7 +31,8 @@ import {
 
 export const getAvailabledata = async (req, res) => {
   try {
-    const urls = await getAllLinks();
+    //{ console.log("This user data comes from the middleware after validation: ", req.user) }
+    const urls = await getAllLinks(req.user.id);
     // console.log(urls);
     res.json(urls);
   } catch (error) {
@@ -60,6 +61,7 @@ export const redirectToURL = async (req, res) => {
 
 export const insertNewData = async (req, res) => {
   try {
+    console.log("This is before inserting the data: ", req.body);
     const { url, shortUrl } = req.body;
 
     if (!url) {
@@ -76,7 +78,7 @@ export const insertNewData = async (req, res) => {
     }
 
     // Save to database
-    await saveLink(url, shortcode);
+    await saveLink(url, shortcode, req.user.id); // {Now here i have to pass the id also because to store as a foreign key}
 
     res.status(201).json({
       message: "URL Shortened Successfully!",
@@ -120,13 +122,19 @@ export const updateUrl = async (req, res) => {
     }
 
     if (!url && !shortUrl) {
-      return res.status(400).json({ error: "At least one field (url or shortUrl) is required!" });
+      return res
+        .status(400)
+        .json({ error: "At least one field (url or shortUrl) is required!" });
     }
 
     // {Validate the request id is exst in the database or not}
     // Get the existing link
-    const existingLink = await db.select().from(urlTable).where(eq(urlTable.id, parseInt(id))).limit(1);
-    console.log(existingLink)
+    const existingLink = await db
+      .select()
+      .from(urlTable)
+      .where(eq(urlTable.id, parseInt(id)))
+      .limit(1);
+    console.log(existingLink);
     if (!existingLink || existingLink.length === 0) {
       return res.status(404).json({ error: "URL not found!" });
     }

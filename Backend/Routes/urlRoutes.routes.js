@@ -16,7 +16,7 @@ const router = Router();
 router.get("/urlshortner", requireAuth, getAvailabledata);
 
 // Route to add a new shortened URL to the database
-router.post("/", requireAuth, insertNewData);
+router.post("/urlshortner", requireAuth, insertNewData);
 
 // Route to update a URL by ID
 router.put("/:id", requireAuth, updateUrl);

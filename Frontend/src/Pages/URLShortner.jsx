@@ -27,7 +27,7 @@ const URLShortner = () => {
       console.log("Data at Frontend:", data);
 
       const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
-      const res = await axios.post(`${API_URL}`, data, {
+      const res = await axios.post(`${API_URL}/urlshortner`, data, {
         withCredentials: true,
       });
 

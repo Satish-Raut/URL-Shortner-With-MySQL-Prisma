@@ -3,8 +3,9 @@ import { db } from "../Config/drizzleDB.js";
 import { urlTable } from "../Drizzle/schema.js";
 
 // Get all links (for the frontend list)
-export const getAllLinks = async () => {
-  const data = await db.select().from(urlTable);
+export const getAllLinks = async (id) => {
+  console.log("Data request for the user with id: ", id);
+  const data = await db.select().from(urlTable).where(eq(urlTable.userId, id));
   return data;
 };
 
@@ -19,10 +20,11 @@ export const findLinkByShortcode = async (shortcode) => {
 };
 
 // Save a new link
-export const saveLink = async (url, shortcode) => {
+export const saveLink = async (url, shortcode, id) => {
   const insertUrl = await db.insert(urlTable).values({
     url: url,
     shortCode: shortcode,
+    userId: id
   });
 
   return insertUrl;

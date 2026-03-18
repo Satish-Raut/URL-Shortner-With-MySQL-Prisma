@@ -187,7 +187,21 @@ Understanding how data moves through your application is key to backend developm
 
 ---
 
-## 11. Final Verification
+## 11. Authenticated user context (middleware and req.user)
+
+For a multi-user URL shortener, the pattern is:
+
+1. `requireAuth` middleware reads the JWT from `req.cookies.access_tocken`.
+2. It verifies the token with `jwt.verify(token, process.env.JWT_KEY)`.
+3. On success, it attaches user info to the request object:
+   - `req.user = { id, name, email, iat, exp }`
+4. Controllers use `req.user.id` to filter and create user-specific data:
+   - read all links: `SELECT * FROM shortlinks WHERE user_id = ?`
+   - create link: `INSERT INTO shortlinks (url, short_code, user_id) VALUES (...)`
+
+This is known as the request-scoped authenticated user context.
+
+## 12. Final Verification
 
 - Test all endpoints with Postman.
 - Ensure the redirection is working from the root domain.
