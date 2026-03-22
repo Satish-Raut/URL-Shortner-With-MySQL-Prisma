@@ -21,6 +21,11 @@ const RegisterPage = () => {
     e.preventDefault();
     const loadingToast = toast.loading("Creating account...");
 
+    if (formData.password !== formData.confirm_password) {
+      toast.error("Passwords do not match!", { id: loadingToast });
+      return;
+    }
+
     try {
       const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
       const response = await axios.post(`${API_URL}/register`, formData, {

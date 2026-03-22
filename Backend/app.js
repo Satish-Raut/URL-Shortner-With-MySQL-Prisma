@@ -8,14 +8,20 @@ import cookieParser from "cookie-parser";
 //{ NOTE: Create the Express-Server}
 const app = express();
 
+// { NOTE: Important for cookies to work on Render/Vercel behind a proxy }
+app.set("trust proxy", 1);
+
 //{ NOTE: Write the usefull middlewares}
 app.use(express.json()); // Enable JSON parsing
 app.use(express.urlencoded({ extended: true }));
 
-//{ NOTE: The purpose of this middleware is to Configures the security bridge to ONLY allow requests from your specific frontend URL.}
+//{ NOTE: Correcting common CORS mistake: remove trailing slash from FRONTEND_URL if present}
+const allowedOrigin = (process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/$/, "");
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    // origin: process.env.FRONTEND_URL || "http://localhost:5173
+    origin: allowedOrigin,
     credentials: true,
   }),
 );

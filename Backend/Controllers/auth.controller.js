@@ -58,11 +58,11 @@ export const postLogin = async (req, res) => {
     try {
       isPasswordValid = await comparePassword(password, validUser.password);
     } catch (error) {
-      // Fallback: If argon2 fails (e.g. "pchstr must contain a $ as first char"),
-      // it means the database has an old plaintext password that wasn't hashed.
-      if (validUser.password === password) {
-        isPasswordValid = true;
-      }
+      console.error("Password comparison error:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error during authentication",
+      });
     }
 
     if (!isPasswordValid) {
@@ -87,13 +87,14 @@ export const postLogin = async (req, res) => {
     });
 
     // { ii. Set the cookie here with a token }
+    const isProduction = process.env.NODE_ENV === "production";
     res.cookie("access_token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
       maxAge: 30 * 24 * 60 * 60 * 1000,
     });
-
+    
     return res.status(200).json({
       success: true,
       message: "Logged in successfully",
@@ -192,16 +193,23 @@ export const postRegister = async (req, res) => {
 export const getCurrentUser = async (req, res) => {
   try {
     const token = req.cookies.access_token;
-    if (!token) return res.json({ loggedIn: false });
+    console.log("Cookies received in /auth/me:", req.cookies);
+
+    if (!token) {
+      console.log("No access_token found in cookies");
+      return res.json({ loggedIn: false });
+    }
 
     // {Verify JWT tocken}
     const decoded = jwt.verify(token, process.env.JWT_KEY);
-    console.log("Token: ", token);
-    console.log("Decoded form: ", decoded);
+    console.log("Token decoded successfully:", decoded.id);
 
     // {I need only the id of the user who looged in to fetch their details}
     const [user] = await getUserById({ id: Number(decoded.id) });
-    if (!user) return res.json({ loggedIn: false });
+    if (!user) {
+      console.log("User not found in DB for ID:", decoded.id);
+      return res.json({ loggedIn: false });
+    }
 
     return res.json({
       loggedIn: true,
@@ -212,6 +220,7 @@ export const getCurrentUser = async (req, res) => {
       },
     });
   } catch (err) {
+    console.error("Error in getCurrentUser:", err.message);
     return res.json({ loggedIn: false });
   }
 };
