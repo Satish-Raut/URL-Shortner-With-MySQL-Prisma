@@ -100,6 +100,7 @@ export const postLogin = async (req, res) => {
       message: "Logged in successfully",
       redirectTo: "/", // redirect to home page
       user: { email: email },
+      token: token, // { NOTE: Return token for Bearer authentication }
     });
   } else {
     //{4. Otherwise redirect them to registration page}
@@ -192,11 +193,19 @@ export const postRegister = async (req, res) => {
 // "---- 🚀 JWT Authentication Approach-------"
 export const getCurrentUser = async (req, res) => {
   try {
-    const token = req.cookies.access_token;
-    console.log("Cookies received in /auth/me:", req.cookies);
+    // { NOTE: Extract token from Cookies OR Authorization Header }
+    let token = req.cookies.access_token;
+    
+    if (!token && req.headers.authorization) {
+      const parts = req.headers.authorization.split(" ");
+      if (parts.length === 2 && parts[0] === "Bearer") {
+        token = parts[1];
+      }
+    }
+
+    console.log("Token retrieved for /auth/me:", token ? "Token present" : "No token");
 
     if (!token) {
-      console.log("No access_token found in cookies");
       return res.json({ loggedIn: false });
     }
 

@@ -53,9 +53,22 @@ Instead of fighting third-party cookie blocks, we used a **Vercel Proxy** to mak
 2.  Now, the frontend calls `/api/login` instead of `https://render.com/login`.
 3.  **The Magic**: Since `/api/login` is on the same domain as the website, the browser treats it as a **First-Party** cookie. This bypasses all third-party blocking and makes authentication 100% reliable.
 
----
+## 4. The Fail-Safe Solution: Bearer Tokens (Authorization Header)
 
-## 4. Summary of Key Logic
+If cookies still fail due to cross-domain browser restrictions, switching to **Bearer Tokens** is the 100% reliable alternative.
+
+### How it works:
+1.  **Backend**: Returns the JWT token in the JSON response body upon login.
+2.  **Frontend**: Stores the token in `localStorage.setItem("token", token)`.
+3.  **Authentication**: All protected frontend requests include the `Authorization` header:
+    ```javascript
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`
+    }
+    ```
+4.  **Backend**: The `getCurrentUser` middleware checks both the `Authorization` header and cookies to verify the user.
+
+This bypasses all cookie-related restrictions and works perfectly across different domains.
 
 | Component | Responsibility |
 | :--- | :--- |

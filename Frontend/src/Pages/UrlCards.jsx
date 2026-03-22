@@ -41,6 +41,9 @@ const UrlCards = ({ urls, setUrls }) => {
 
                 await axios.delete(`${API_URL}/${id}`, {
                   withCredentials: true,
+                  headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                  }
                 });
 
                 // {Update the ulrls on which map is applied}
@@ -94,6 +97,9 @@ const UrlCards = ({ urls, setUrls }) => {
         shortUrl: editShortUrl || undefined,
       }, {
         withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
       });
 
 
@@ -133,6 +139,9 @@ const UrlCards = ({ urls, setUrls }) => {
         const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
         const res = await axios.get(`${API_URL}/urlshortner`, {
           withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`
+          }
         });
         // console.log(res);
 

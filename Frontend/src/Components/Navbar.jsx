@@ -17,7 +17,12 @@ const Navbar = () => {
         const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
         const res = await axios.get(
           `${API_URL}/auth/me`,
-          { withCredentials: true }
+          { 
+            withCredentials: true,
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`
+            }
+          }
         );
 
         console.log("user data by Id at Navbar: \n", res.data);
@@ -40,8 +45,16 @@ const Navbar = () => {
       const res = await axios.post(
         `${API_URL}/logout`,
         {},
-        { withCredentials: true }
+        { 
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`
+          }
+        }
       );
+
+      // { NOTE: Clear token from localStorage }
+      localStorage.removeItem("token");
 
       setIsLoggedIn(false);
       setUserData({});
