@@ -232,7 +232,12 @@ export const logoutUser = async (req, res) => {
     // res.clearCookie("userId");
 
     // "---- 🚀 JWT Authentication Approach-------"
-    res.clearCookie("access_token");
+    const isProduction = process.env.NODE_ENV === "production";
+    res.clearCookie("access_token", {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+    });
 
     return res.json({
       success: true,
