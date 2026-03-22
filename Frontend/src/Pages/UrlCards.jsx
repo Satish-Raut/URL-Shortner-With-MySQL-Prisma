@@ -43,6 +43,7 @@ const UrlCards = ({ urls, setUrls }) => {
                   withCredentials: true,
                 });
 
+                // {Update the ulrls on which map is applied}
                 setUrls((prev) => prev.filter((url) => url.id !== id));
 
                 toast.success("URL deleted successfully!");

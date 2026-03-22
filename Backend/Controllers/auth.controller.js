@@ -9,6 +9,10 @@ import {
   generateTocken,
   hashPassword,
 } from "../Services/auth.service.js";
+import {
+  loginUserSchema,
+  registerUserSchema,
+} from "../Validators/auth-validator.js";
 
 // "Both the get page are handled by the Frontend"
 
@@ -22,7 +26,27 @@ import {
 
 export const postLogin = async (req, res) => {
   // {1. Verify the data given by the user i.e already regesterd or not}
-  const { email, password } = req.body;
+  // const { email, password } = req.body;
+
+  // {Validatio using Zod}
+  const parsed = loginUserSchema.safeParse(req.body);
+
+  if (!parsed.success) {
+    const errors = parsed.error.flatten().fieldErrors;
+    const firstError = Object.values(errors)[0]?.[0];
+
+    return res.status(400).json({
+      success: false,
+      message: firstError || "Validation failed",
+      redirectTo: "/login",
+      errors,
+    });
+  }
+
+  // {Now get the data}
+  const { email, password } = parsed.data;
+
+  // {Get the user details using user email}
   const [validUser] = await getUserByEmail({ email });
 
   console.log("Logged In Valid User:", validUser);
@@ -89,13 +113,31 @@ export const postLogin = async (req, res) => {
 
 export const postRegister = async (req, res) => {
   // {1. Get the data from the user}
-  const { name, email, password } = req.body;
+  // const { name, email, password } = req.body;
 
-  // {2. Verify the details and check that the already exist or not}
+  // {1. Validate the incoming user data}
+  const parsed = registerUserSchema.safeParse(req.body);
+
+  if (!parsed.success) {
+    const errors = parsed.error.flatten().fieldErrors;
+    const firstError = Object.values(errors)[0]?.[0];
+
+    return res.status(400).json({
+      success: false,
+      message: firstError || "Validation failed",
+      redirectTo: "/register",
+      errors,
+    });
+  }
+
+  // {Now get the data}
+  const { name, email, password } = parsed.data;
+  console.log("validated data:", parsed.data);
+
+  // {2. Verify whether the user already exists}
   const userExists = await getUserByEmail({ email });
   console.log("userExists", userExists);
 
-  // {3. If the user already exist then redirect to Login page}
   if (userExists.length !== 0) {
     return res.status(409).json({
       success: false,
@@ -104,16 +146,15 @@ export const postRegister = async (req, res) => {
     });
   }
 
-  // {4. If the user is not exist then store data in database}
-  const hashedPassword = await hashPassword(password); // Before storing hash the password
+  // {3. Hash password and save new user}
+  const hashedPassword = await hashPassword(password);
   await saveUserdata({ name, email, password: hashedPassword });
 
-  // Backend controls where the user goes after success
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     message: "Registered successfully",
-    redirectTo: "/login", // The backend "decides" the destination
-    user: { email: req.body.email },
+    redirectTo: "/login",
+    user: { email },
   });
 };
 

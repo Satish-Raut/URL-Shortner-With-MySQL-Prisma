@@ -45,7 +45,7 @@ const URLShortner = () => {
 
       setOriginalUrl("");
       setCustomTail("");
-      toast.success("URL Shortened Successfully!");
+      toast.success(res?.data?.message);
     } catch (error) {
       console.error("Error:", error);
       const errorMessage =
