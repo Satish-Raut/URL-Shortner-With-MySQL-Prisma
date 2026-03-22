@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import { db } from "../Config/drizzleDB.js";
-import { urlTable } from "../Drizzle/schema.js";
+import { urlTable } from "../drizzle/schema.js";
 
 // Get all links (for the frontend list)
 export const getAllLinks = async (id) => {

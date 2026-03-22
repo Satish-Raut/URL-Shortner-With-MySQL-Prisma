@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { db } from "../Config/drizzleDB.js";
-import { urlTable } from "../Drizzle/schema.js";
+import { urlTable } from "../drizzle/schema.js";
 import { eq } from "drizzle-orm";
 
 // {This imports for MySql}

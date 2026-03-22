@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "../Config/drizzleDB.js";
-import { userTable } from "../Drizzle/schema.js";
+import { userTable } from "../drizzle/schema.js";
 
 
 // * New user data inserted into the database *
