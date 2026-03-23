@@ -32,6 +32,11 @@ When your frontend is at `https://frontend.vercel.app` and your backend is at `h
 **Issue**: Express might not know it is running behind a secure proxy (Load Balancer), so it thinks the request is insecure and refuses to set a "secure" cookie.
 - **Solution**: `app.set("trust proxy", 1);` tells Express to trust the headers sent by Render/Vercel's proxy.
 
+### D. Frontend Routing 404 (Logout Bug)
+**Issue**: Navigation to `/logout` fails with a 404 error if the route is not defined in React Router.
+- **Problem**: In the mobile view, the logout button was using a `<Link to="/logout">`, but there was no corresponding route in `App.jsx`.
+- **Solution**: Replaced the link with a `<button>` that triggers the `handleLogOut` function. **Logout should always be an action** (API call + State update) rather than a **navigation** to a non-existent route.
+
 ---
 
 ## 3. The Ultimate Solution: Same-Site Proxying (vercel.json)

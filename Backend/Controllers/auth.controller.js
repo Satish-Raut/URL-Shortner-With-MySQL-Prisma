@@ -28,7 +28,7 @@ export const postLogin = async (req, res) => {
   // {1. Verify the data given by the user i.e already regesterd or not}
   // const { email, password } = req.body;
 
-  // {Validatio using Zod}
+  // {Validation using Zod}
   const parsed = loginUserSchema.safeParse(req.body);
 
   if (!parsed.success) {

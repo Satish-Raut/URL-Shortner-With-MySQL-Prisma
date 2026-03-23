@@ -196,12 +196,12 @@ const Navbar = () => {
                   </div>
 
                   {/* Logout */}
-                  <Link
-                    to="/logout"
-                    className="block w-full px-3 py-2 rounded-lg text-red-400 hover:text-red-500 hover:bg-red-500/10 transition font-semibold text-sm"
+                  <button
+                    onClick={handleLogOut}
+                    className="block w-full text-left px-3 py-2 rounded-lg text-red-400 hover:text-red-500 hover:bg-red-500/10 transition font-semibold text-sm cursor-pointer"
                   >
                     Logout
-                  </Link>
+                  </button>
                 </div>
               )}
             </div>
