@@ -196,12 +196,12 @@ export const getCurrentUser = async (req, res) => {
     // { NOTE: Extract token from Cookies OR Authorization Header }
     let token = req.cookies.access_token;
     
-    if (!token && req.headers.authorization) {
+    /* if (!token && req.headers.authorization) {
       const parts = req.headers.authorization.split(" ");
       if (parts.length === 2 && parts[0] === "Bearer") {
         token = parts[1];
       }
-    }
+    } */
 
     console.log("Token retrieved for /auth/me:", token ? "Token present" : "No token");
 

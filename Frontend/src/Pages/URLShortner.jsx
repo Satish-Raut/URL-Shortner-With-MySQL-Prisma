@@ -29,9 +29,7 @@ const URLShortner = () => {
       const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
       const res = await axios.post(`${API_URL}/urlshortner`, data, {
         withCredentials: true,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
+        /* Authorization: `Bearer ${localStorage.getItem("token")}` */
       });
 
       console.log("Response from Backend:", res.data);

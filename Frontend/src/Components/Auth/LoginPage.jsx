@@ -28,9 +28,9 @@ const LoginPage = () => {
 
 
       if (response.data.success) {
-        if (response.data.token) {
+        /* if (response.data.token) {
           localStorage.setItem("token", response.data.token);
-        }
+        } */
         toast.success(response.data.message, { id: loadingToast });
         // Follow the backend's redirection command
         navigate(response.data.redirectTo || "/");

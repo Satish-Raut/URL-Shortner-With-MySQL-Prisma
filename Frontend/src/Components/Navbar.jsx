@@ -19,9 +19,7 @@ const Navbar = () => {
           `${API_URL}/auth/me`,
           { 
             withCredentials: true,
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`
-            }
+            /* Authorization: `Bearer ${localStorage.getItem("token")}` */
           }
         );
 
@@ -47,14 +45,12 @@ const Navbar = () => {
         {},
         { 
           withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`
-          }
+          /* Authorization: `Bearer ${localStorage.getItem("token")}` */
         }
       );
 
       // { NOTE: Clear token from localStorage }
-      localStorage.removeItem("token");
+      // localStorage.removeItem("token");
 
       setIsLoggedIn(false);
       setUserData({});
