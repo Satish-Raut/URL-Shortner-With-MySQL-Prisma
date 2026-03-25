@@ -46,69 +46,77 @@ export const postLogin = async (req, res) => {
   // {Now get the data}
   const { email, password } = parsed.data;
 
-  // {Get the user details using user email}
-  const [validUser] = await getUserByEmail({ email });
+  try {
+    // {Get the user details using user email}
+    const [validUser] = await getUserByEmail({ email });
 
-  console.log("Logged In Valid User:", validUser);
+    console.log("Logged In Valid User:", validUser);
 
-  // {2. If the user already registered then redirect to Home page}
-  if (validUser) {
-    // {3. Verify the password matches here before logging them in!}
-    let isPasswordValid = false;
-    try {
-      isPasswordValid = await comparePassword(password, validUser.password);
-    } catch (error) {
-      console.error("Password comparison error:", error);
-      return res.status(500).json({
+    // {2. If the user already registered then redirect to Home page}
+    if (validUser) {
+      // {3. Verify the password matches here before logging them in!}
+      let isPasswordValid = false;
+      try {
+        isPasswordValid = await comparePassword(password, validUser.password);
+      } catch (error) {
+        console.error("Password comparison error:", error);
+        return res.status(500).json({
+          success: false,
+          message: "Internal server error during authentication",
+        });
+      }
+
+      if (!isPasswordValid) {
+        return res.status(401).json({
+          success: false,
+          message: "Incorrect email & password. Please try again.",
+        });
+      }
+
+      // "----💡 Session Authentication Approach-------"
+      //{4. Set the cookie only upon successful login}
+      // res.cookie("isLoggedIn", true); // Login Status
+      // res.cookie("userId", validUser.id); // To know which user logged In
+      // console.log("cookie is saved in the browser");
+
+      // "---- 🚀 JWT Authentication Approach-------"
+      // { i. Define the token }
+      const token = generateTocken({
+        id: validUser.id,
+        name: validUser.name,
+        email: validUser.email,
+      });
+
+      // { ii. Set the cookie here with a token }
+      const isProduction = process.env.NODE_ENV === "production";
+      res.cookie("access_token", token, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: "Logged in successfully",
+        redirectTo: "/", // redirect to home page
+        user: { email: email },
+        token: token, // { NOTE: Return token for Bearer authentication }
+      });
+    } else {
+      //{4. Otherwise redirect them to registration page}
+      // A 404 Not Found error tells the frontend the resource (user) doesn't exist
+      return res.status(404).json({
         success: false,
-        message: "Internal server error during authentication",
+        message: "Account not found. Please create an account.",
+        redirectTo: "/register",
       });
     }
-
-    if (!isPasswordValid) {
-      return res.status(401).json({
-        success: false,
-        message: "Incorrect email & password. Please try again.",
-      });
-    }
-
-    // "----💡 Session Authentication Approach-------"
-    //{4. Set the cookie only upon successful login}
-    // res.cookie("isLoggedIn", true); // Login Status
-    // res.cookie("userId", validUser.id); // To know which user logged In
-    // console.log("cookie is saved in the browser");
-
-    // "---- 🚀 JWT Authentication Approach-------"
-    // { i. Define the token }
-    const token = generateTocken({
-      id: validUser.id,
-      name: validUser.name,
-      email: validUser.email,
-    });
-
-    // { ii. Set the cookie here with a token }
-    const isProduction = process.env.NODE_ENV === "production";
-    res.cookie("access_token", token, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-    });
-    
-    return res.status(200).json({
-      success: true,
-      message: "Logged in successfully",
-      redirectTo: "/", // redirect to home page
-      user: { email: email },
-      token: token, // { NOTE: Return token for Bearer authentication }
-    });
-  } else {
-    //{4. Otherwise redirect them to registration page}
-    // A 404 Not Found error tells the frontend the resource (user) doesn't exist
-    return res.status(404).json({
+  } catch (error) {
+    console.error("Login DB error:", error);
+    return res.status(500).json({
       success: false,
-      message: "Account not found. Please create an account.",
-      redirectTo: "/register",
+      message: "Unable to connect to the database. Please try again later.",
     });
   }
 };
@@ -136,28 +144,36 @@ export const postRegister = async (req, res) => {
   const { name, email, password } = parsed.data;
   console.log("validated data:", parsed.data);
 
-  // {2. Verify whether the user already exists}
-  const userExists = await getUserByEmail({ email });
-  console.log("userExists", userExists);
+  try {
+    // {2. Verify whether the user already exists}
+    const userExists = await getUserByEmail({ email });
+    console.log("userExists", userExists);
 
-  if (userExists.length !== 0) {
-    return res.status(409).json({
-      success: false,
-      message: "You have already registered.",
+    if (userExists.length !== 0) {
+      return res.status(409).json({
+        success: false,
+        message: "You have already registered.",
+        redirectTo: "/login",
+      });
+    }
+
+    // {3. Hash password and save new user}
+    const hashedPassword = await hashPassword(password);
+    await saveUserdata({ name, email, password: hashedPassword });
+
+    return res.status(200).json({
+      success: true,
+      message: "Registered successfully",
       redirectTo: "/login",
+      user: { email },
+    });
+  } catch (error) {
+    console.error("Register DB error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Unable to connect to the database. Please try again later.",
     });
   }
-
-  // {3. Hash password and save new user}
-  const hashedPassword = await hashPassword(password);
-  await saveUserdata({ name, email, password: hashedPassword });
-
-  return res.status(200).json({
-    success: true,
-    message: "Registered successfully",
-    redirectTo: "/login",
-    user: { email },
-  });
 };
 
 // "----💡 Session Authentication Approach-------"

@@ -16,7 +16,9 @@ app.use(express.json()); // Enable JSON parsing
 app.use(express.urlencoded({ extended: true }));
 
 //{ NOTE: Correcting common CORS mistake: remove trailing slash from FRONTEND_URL if present}
-const allowedOrigin = (process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/$/, "");
+const allowedOrigin = (
+  process.env.FRONTEND_URL || "http://localhost:5173"
+).replace(/\/$/, "");
 
 app.use(
   cors({
