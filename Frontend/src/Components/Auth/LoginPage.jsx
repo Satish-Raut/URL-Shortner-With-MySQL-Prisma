@@ -26,7 +26,6 @@ const LoginPage = () => {
         withCredentials: true,
       });
 
-
       if (response.data.success) {
         /* if (response.data.token) {
           localStorage.setItem("token", response.data.token);

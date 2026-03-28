@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1773294784283,
-      "tag": "0000_daffy_wendell_rand",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1773515448078,
-      "tag": "0001_redundant_micromax",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1773817100476,
-      "tag": "0002_colorful_lila_cheney",
+      "when": 1774695941847,
+      "tag": "0000_graceful_mordo",
       "breakpoints": true
     }
   ]

@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import { db } from "../Config/drizzleDB.js";
-import { urlTable } from "../drizzle/schema.js";
+import { sessionTable, urlTable, userTable } from "../drizzle/schema.js";
 
 // Get all links (for the frontend list)
 export const getAllLinks = async (id) => {
@@ -24,7 +24,7 @@ export const saveLink = async (url, shortcode, id) => {
   const insertUrl = await db.insert(urlTable).values({
     url: url,
     shortCode: shortcode,
-    userId: id
+    userId: id,
   });
 
   return insertUrl;
@@ -53,4 +53,23 @@ export const updateLink = async (id, newUrl, newShortCode) => {
     })
     .where(eq(urlTable.id, id));
   return result;
+};
+
+// Get the session id for genereting a new access token
+export const getSessionById = async (sessionId) => {
+  const userId = await db
+    .select()
+    .from(sessionTable)
+    .where(eq(sessionId, sessionTable.id));
+
+  return userId;
+};
+
+export const findUserById = async (userId) => {
+  const userData = await db
+    .select()
+    .from(userTable)
+    .where(eq(userId, userTable.id));
+
+  return userData;
 };

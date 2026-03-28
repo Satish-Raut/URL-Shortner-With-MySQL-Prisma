@@ -6,13 +6,21 @@ import {
 } from "../Models/usersModel.model.js";
 import {
   comparePassword,
-  generateTocken,
+  createAccessTocken,
+  createRefreshToken,
+  createSession,
+  // generateTocken,
   hashPassword,
 } from "../Services/auth.service.js";
 import {
   loginUserSchema,
   registerUserSchema,
 } from "../Validators/auth-validator.js";
+import {
+  ACCESS_TOKEN_EXPIRY,
+  REFRESH_TOKEN_EXPIRY,
+} from "../Config/constants.js";
+import { success } from "zod";
 
 // "Both the get page are handled by the Frontend"
 
@@ -25,7 +33,7 @@ import {
 // };
 
 export const postLogin = async (req, res) => {
-  // {1. Verify the data given by the user i.e already regesterd or not}
+  // {1. Verify the data given by the user i.e already registerd or not}
   // const { email, password } = req.body;
 
   // {Validation using Zod}
@@ -81,27 +89,68 @@ export const postLogin = async (req, res) => {
 
       // "---- 🚀 JWT Authentication Approach-------"
       // { i. Define the token }
-      const token = generateTocken({
+      // const token = generateTocken({
+      //   id: validUser.id,
+      //   name: validUser.name,
+      //   email: validUser.email,
+      // });
+
+      // { ii. Set the cookie here with a token }
+      // const isProduction = process.env.NODE_ENV === "production";
+      // res.cookie("access_token", token, {
+      //   httpOnly: true,
+      //   secure: isProduction,
+      //   sameSite: isProduction ? "none" : "lax",
+      //   maxAge: 30 * 24 * 60 * 60 * 1000,
+      // });
+
+      // return res.status(200).json({
+      //   success: true,
+      //   message: "Logged in successfully",
+      //   redirectTo: "/", // redirect to home page
+      //   user: { email: email },
+      //   token: token, // { NOTE: Return token for Bearer authentication }
+      // });
+
+      // "---- 🚀 Hybrid Authentication Approach-------"
+
+      // {i. We need to create a Session.}
+      const session = await createSession(validUser.id, {
+        ip: req.clientIp,
+        userAgent: req.headers["user-agent"],
+      });
+
+      // {ii. Create an Access token.}
+      const accessToken = await createAccessTocken({
         id: validUser.id,
         name: validUser.name,
         email: validUser.email,
+        sessionId: session,
       });
 
-      // { ii. Set the cookie here with a token }
-      const isProduction = process.env.NODE_ENV === "production";
-      res.cookie("access_token", token, {
+      // {iii. Create a Refresh token.}
+      const refreshToken = await createRefreshToken(session);
+
+      // {iv. Send the access token to frontend}
+      res.cookie("access_token", accessToken, {
         httpOnly: true,
-        secure: isProduction,
-        sameSite: isProduction ? "none" : "lax",
-        maxAge: 30 * 24 * 60 * 60 * 1000,
+        secure: true,
+        maxAge: ACCESS_TOKEN_EXPIRY,
       });
 
-      return res.status(200).json({
+      // {v. Send the refresh token to frontend}
+      res.cookie("refresh_token", refreshToken, {
+        httpOnly: true,
+        secure: true,
+        maxAge: REFRESH_TOKEN_EXPIRY,
+      });
+
+      // {vi. After completion of login send the sucess message and the the page path to redirect.}
+      res.status(200).json({
         success: true,
         message: "Logged in successfully",
         redirectTo: "/", // redirect to home page
         user: { email: email },
-        token: token, // { NOTE: Return token for Bearer authentication }
       });
     } else {
       //{4. Otherwise redirect them to registration page}
@@ -209,30 +258,10 @@ export const postRegister = async (req, res) => {
 // "---- 🚀 JWT Authentication Approach-------"
 export const getCurrentUser = async (req, res) => {
   try {
-    // { NOTE: Extract token from Cookies OR Authorization Header }
-    let token = req.cookies.access_token;
-    
-    /* if (!token && req.headers.authorization) {
-      const parts = req.headers.authorization.split(" ");
-      if (parts.length === 2 && parts[0] === "Bearer") {
-        token = parts[1];
-      }
-    } */
+    // If requireAuth succeeds, req.user is guaranteed to be set correctly
+    const [user] = await getUserById({ id: Number(req.user.id) });
 
-    console.log("Token retrieved for /auth/me:", token ? "Token present" : "No token");
-
-    if (!token) {
-      return res.json({ loggedIn: false });
-    }
-
-    // {Verify JWT tocken}
-    const decoded = jwt.verify(token, process.env.JWT_KEY);
-    console.log("Token decoded successfully:", decoded.id);
-
-    // {I need only the id of the user who looged in to fetch their details}
-    const [user] = await getUserById({ id: Number(decoded.id) });
     if (!user) {
-      console.log("User not found in DB for ID:", decoded.id);
       return res.json({ loggedIn: false });
     }
 

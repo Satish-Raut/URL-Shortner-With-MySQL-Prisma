@@ -359,6 +359,7 @@ try {
 const decoded = jwt.decode(token);
 console.log(decoded); // { id: 123, email: "a@b.com", iat: 168..., exp: 171... }
 ```
+
 > Note: in your project use `jwt.verify` for auth checks. `jwt.decode` should not replace secure verification.
 
 ---
@@ -366,6 +367,7 @@ console.log(decoded); // { id: 123, email: "a@b.com", iat: 168..., exp: 171... }
 ## 🧩 JWT decoded object example (key/value explanation)
 
 **Decoded form**:
+
 ```js
 {
   id: 8,
@@ -384,3 +386,203 @@ console.log(decoded); // { id: 123, email: "a@b.com", iat: 168..., exp: 171... }
 
 **In this example**: token lifespan is `exp - iat = 2592000` seconds → exactly 30 days.
 
+---
+
+## 🪪 Session Authentication (Stateful Authentication)
+
+While JWT is **stateless** (the token contains all user data and the server doesn't store anything), **Session Authentication** is **stateful**.
+
+### How it Works
+
+1. **Login:** The user sends credentials to the server.
+2. **Session Creation:** The server verifies credentials, creates a "session ID," and stores user data (like user ID) in its memory or a database (like Redis or MongoDB) tied to that session ID.
+3. **Cookie Sent:** The server sends only the `session ID` back to the browser in a cookie (not the actual user data).
+4. **Subsequent Requests:** The browser automatically sends the session ID cookie with every request.
+5. **Verification:** The server reads the session ID from the cookie, looks it up in its memory/database, and retrieves the associated user data to authenticate the request.
+
+### Pros & Cons
+
+| Feature | Session Auth | JWT Auth |
+| :--- | :--- | :--- |
+| **State** | Stateful (Session stored on Server) | Stateless (Everything in Token) |
+| **Revocation** | Easy (Delete session from DB/Memory) | Hard (Must wait for expiry or use blacklists) |
+| **Scalability** | Harder (Requires centralized session store like Redis for multiple servers) | Easier (Any server with the secret key can verify) |
+| **Payload Size** | Small (Only sends Session ID) | Larger (Sends encoded user data) |
+
+---
+
+## 💻 Practical Implementation Example (Session Auth)
+
+### 1. Backend Implementation (Express.js)
+
+You will need the `express-session` package.
+_Note: In production, you should use a session store like `connect-redis` or `connect-mongo` instead of the default memory store to prevent memory leaks and session loss on restart._
+
+**Installation:**
+
+```bash
+npm install express-session
+```
+
+**Setup (`app.js`):**
+
+```javascript
+import express from "express";
+import session from "express-session";
+import cors from "cors";
+
+const app = express();
+
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true 
+}));
+
+app.use(express.json());
+
+// Configure express-session
+app.use(
+  session({
+    secret: "your_super_secret_key", // Used to sign the session ID cookie
+    resave: false, // Don't save session if unmodified
+    saveUninitialized: false, // Don't create session until something is stored
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // true requires HTTPS
+      httpOnly: true, // Prevents XSS attacks
+      maxAge: 1000 * 60 * 60 * 24, // 1 Day
+      sameSite: "lax", // For local dev cross-origin
+    },
+  })
+);
+```
+
+**Auth Controllers (`auth.controller.js`):**
+
+```javascript
+// Login Controller
+export const login = (req, res) => {
+  const { email, password } = req.body;
+  
+  // 1. Verify user in Database (pseudo-code)
+  const user = findUserInDB(email, password);
+  
+  if (!user) {
+    return res.status(401).json({ message: "Invalid credentials" });
+  }
+
+  // 2. Create Session! 
+  // We attach the user id to the req.session object. 
+  // Express-session automatically creates the session id and sends the cookie to the frontend.
+  req.session.userId = user.id;
+  req.session.role = user.role;
+
+  res.status(200).json({ message: "Logged in successfully!" });
+};
+
+// Logout Controller
+export const logout = (req, res) => {
+  // Destroys the session on the server and clears the cookie on the client
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ message: "Could not log out" });
+    }
+    res.clearCookie("connect.sid"); // "connect.sid" is the default cookie name for express-session
+    res.status(200).json({ message: "Logged out successfully" });
+  });
+};
+
+// Protected Route Middleware
+export const requireSessionAuth = (req, res, next) => {
+  // Check if the session exists and has our userId attached
+  if (req.session && req.session.userId) {
+    next(); // User is authenticated
+  } else {
+    res.status(401).json({ message: "Unauthorized. Please log in." });
+  }
+};
+```
+
+### 2. Frontend Implementation (React / Axios)
+
+The frontend implementation is exactly identical to the JWT (Cookie-based) approach. The browser automatically handles the `connect.sid` cookie just like any other cookie.
+
+**`LoginPage.jsx`:**
+
+```javascript
+import axios from "axios";
+import { useState } from "react";
+
+const LoginPage = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/login",
+        { email, password },
+        { withCredentials: true } // CRITICAL: Allows browser to receive and send the session cookie
+      );
+      
+      console.log(response.data.message);
+      // Redirect to dashboard...
+      
+    } catch (error) {
+      console.error("Login failed:", error.response?.data?.message);
+    }
+  };
+
+  return (
+    <form onSubmit={handleLogin}>
+      <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
+      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
+      <button type="submit">Login</button>
+    </form>
+  );
+};
+
+export default LoginPage;
+```
+
+**Fetching Protected Data (`Dashboard.jsx`):**
+
+```javascript
+import axios from "axios";
+import { useEffect, useState } from "react";
+
+const Dashboard = () => {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    const fetchSecureData = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/api/protected-route", {
+          withCredentials: true, // CRITICAL: Sends the session ID cookie back to the server
+        });
+        setData(response.data);
+      } catch (error) {
+        console.log("Not authenticated", error);
+      }
+    };
+    
+    fetchSecureData();
+  }, []);
+
+  return <div>{data ? JSON.stringify(data) : "Loading or Unauthorized..."}</div>;
+};
+
+export default Dashboard;
+```
+
+### 🖼️ Visualizing the Difference
+
+**JWT Authentication:**
+`[Browser]` ➡️ Sends Credentials ➡️ `[Server]` creates JWT containing `{userId: 1, name: "Jatin"}` and signs it.
+`[Server]` ⬅️ Responds with Cookie: `Token=eyJhb...` ⬅️ `[Browser]`
+`[Browser]` ➡️ Next Request + Cookie `Token=eyJhb...` ➡️ `[Server]` verifies JWT mathematically. No DB check needed!
+
+**Session Authentication:**
+`[Browser]` ➡️ Sends Credentials ➡️ `[Server]` saves `{session_id_123: {userId: 1}}` in its Memory/DB.
+`[Server]` ⬅️ Responds with Cookie: `SessionId=123` ⬅️ `[Browser]`
+`[Browser]` ➡️ Next Request + Cookie `SessionId=123` ➡️ `[Server]` looks up `123` in its DB to find that `userId = 1`.

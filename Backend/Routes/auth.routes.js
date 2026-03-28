@@ -17,8 +17,10 @@ router
   // .get(authoController.getLoginPage)
   .post(authoController.postLogin);
 
+import { requireAuth } from "../Middleware/auth.middleware.js";
+
 // Route to check the user is logged in or not (Used for logout feature handling at Frontend)
-router.get("/auth/me", authoController.getCurrentUser );
+router.get("/auth/me", requireAuth, authoController.getCurrentUser );
 
 // Logout the user
 router.post("/logout", authoController.logoutUser);

@@ -1,9 +1,11 @@
 import express from "express";
 import cors from "cors";
 import "dotenv/config";
+import cookieParser from "cookie-parser";
+import requestIp from "request-ip"
+
 import { shortnerRouter } from "./Routes/urlRoutes.routes.js";
 import { authRoutes } from "./Routes/auth.routes.js";
-import cookieParser from "cookie-parser";
 
 //{ NOTE: Create the Express-Server}
 const app = express();
@@ -30,6 +32,9 @@ app.use(
 
 // {Cookie Parser middleware}
 app.use(cookieParser());
+
+// {Request-Ip Middleware}
+app.use(requestIp.mw());   // Now we can access the ip address of any request through `req.clintIp`
 
 // {NOTE: The purpose of this Middleware is to define the routes}
 app.use(authRoutes);

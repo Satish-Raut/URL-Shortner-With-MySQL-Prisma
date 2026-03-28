@@ -1,6 +1,5 @@
 import { relations } from "drizzle-orm";
-import { int, mysqlTable, timestamp, varchar } from "drizzle-orm/mysql-core";
-
+import { int, mysqlTable, timestamp, varchar, boolean, text } from "drizzle-orm/mysql-core";
 
 // Schema for Users data table
 export const userTable = mysqlTable("users", {
@@ -25,16 +24,39 @@ export const urlTable = mysqlTable("shortLinks", {
     .references(() => userTable.id), //{ This is foregin key which conncts to the user table}
 });
 
+// "----------------💡Hybrid Authentication approach.--------------"
+// Schema for Refresh_Tocken
+export const sessionTable = mysqlTable("sessions", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("user_id")
+    .notNull()
+    .references(() => userTable.id, { onDelete: "cascade" }),
+  valid: boolean("valid").default(true).notNull(),
+  userAgent: text("user_agent"),
+  ip: varchar("ip", { length: 255 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
 
-// {1. A single user can have multiple short urls}
+// "------------💡Defining the relation between the tables. ---------"
+// {1. A single user can have multiple short urls and multiple sessions.}
 export const usersRelation = relations(userTable, ({ many }) => ({
   shortLinks: many(urlTable),
+  session: many(sessionTable),
 }));
 
-// {2. A single short link belongs to a single user}
+// {2. A single short link belongs to a single user.}
 export const urlRelation = relations(urlTable, ({ one }) => ({
   user: one(userTable, {
     fields: [urlTable.userId],
     references: [userTable.id],
   }),
 }));
+
+// {3. A single session belongs to a single user only.}
+export const sessionRelation = relations(sessionTable, ({one})=>({
+  user: one(userTable, {
+    fields: [sessionTable.userId],  // Foreign Key
+    references: [userTable.id]
+  })
+}))
