@@ -76,17 +76,21 @@ export const requireAuth = async (req, res, next) => {
       const { newAccessToken, newRefreshToken, user } =
         await refreshAccessToken(refreshToken);
 
+      const isProduction = process.env.NODE_ENV === "production";
+
       // {iv. Send the access token to frontend}
       res.cookie("access_token", newAccessToken, {
         httpOnly: true,
-        secure: true,
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
         maxAge: ACCESS_TOKEN_EXPIRY,
       });
 
       // {v. Send the refresh token to frontend}
       res.cookie("refresh_token", newRefreshToken, {
         httpOnly: true,
-        secure: true,
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
         maxAge: REFRESH_TOKEN_EXPIRY,
       });
 
