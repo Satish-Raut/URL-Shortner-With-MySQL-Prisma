@@ -66,7 +66,7 @@ export const refreshAccessToken = async (refreshToken) => {
     // {ii. Using the session id present in refreshToken get the userID}
     const sessionResult = await getSessionById(decoded.sessionId);
     const currentSession = sessionResult[0]; // extract from array
-    console.log("This data is at auth services: ", currentSession);
+    // console.log("This data is at auth services: ", currentSession);
 
     if (!currentSession || !currentSession.valid) {
       throw new Error("Invalid Session");
@@ -74,7 +74,7 @@ export const refreshAccessToken = async (refreshToken) => {
 
     const userResult = await getUserById({ id: currentSession.userId });
     const user = userResult[0];
-    console.log("User data at auth Service: ", user);
+    // console.log("User data at auth Service: ", user);
 
     if (!user) {
       throw new Error("Invalid User");

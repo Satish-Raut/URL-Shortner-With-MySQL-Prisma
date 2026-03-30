@@ -1,4 +1,3 @@
-import jwt from "jsonwebtoken";
 import {
   getUserByEmail,
   getUserById,
@@ -20,7 +19,7 @@ import {
   ACCESS_TOKEN_EXPIRY,
   REFRESH_TOKEN_EXPIRY,
 } from "../Config/constants.js";
-import { success } from "zod";
+import { clearUserSession } from "../Models/urlModelDrizzle.model.js";
 
 // "Both the get page are handled by the Frontend"
 
@@ -37,6 +36,14 @@ export const postLogin = async (req, res) => {
   // const { email, password } = req.body;
 
   // {Validation using Zod}
+  /*Note: 
+                'loginUserSchema.safeParse(req.body)'
+
+      {i} "This function returns a object with 2 parameter: success, data"
+      {ii} "If the Validation is successfull -> success: true"
+      {ii} "And the data params contains the validated data -> data: {email, password}"
+  
+  */
   const parsed = loginUserSchema.safeParse(req.body);
 
   if (!parsed.success) {
@@ -132,7 +139,7 @@ export const postLogin = async (req, res) => {
       const refreshToken = await createRefreshToken(session);
 
       const isProduction = process.env.NODE_ENV === "production";
-      
+
       // {iv. Send the access token to frontend}
       res.cookie("access_token", accessToken, {
         httpOnly: true,
@@ -200,7 +207,7 @@ export const postRegister = async (req, res) => {
   try {
     // {2. Verify whether the user already exists}
     const userExists = await getUserByEmail({ email });
-    console.log("userExists", userExists);
+    // console.log("userExists", userExists);
 
     if (userExists.length !== 0) {
       return res.status(409).json({
@@ -212,12 +219,52 @@ export const postRegister = async (req, res) => {
 
     // {3. Hash password and save new user}
     const hashedPassword = await hashPassword(password);
-    await saveUserdata({ name, email, password: hashedPassword });
+    const [user] = await saveUserdata({ name, email, password: hashedPassword });
+    // console.log("User Data after registration: ", user.insertId)
+
+    // {4. After the registration complete and the user data stored in database , directly logs in that user}
+
+    // {i. We need to create a Session.}
+    const session = await createSession(user.insertId, {
+      ip: req.clientIp,
+      userAgent: req.headers["user-agent"],
+    });
+
+    // {ii. Create an Access token.}
+    const accessToken = await createAccessTocken({
+      id: user.insertId,
+      name: name,
+      email: email,
+      sessionId: session,
+    });
+
+    // {iii. Create a Refresh token.}
+    const refreshToken = await createRefreshToken(session);
+
+    const isProduction = process.env.NODE_ENV === "production";
+
+    // {iv. Send the access token to frontend}
+    res.cookie("access_token", accessToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+      maxAge: ACCESS_TOKEN_EXPIRY,
+    });
+
+    // {v. Send the refresh token to frontend}
+    res.cookie("refresh_token", refreshToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+      maxAge: REFRESH_TOKEN_EXPIRY,
+    });
+
+    // {vi. After completion of login send the sucess message and the the page path to redirect.}
 
     return res.status(200).json({
       success: true,
       message: "Registered successfully",
-      redirectTo: "/login",
+      redirectTo: "/",
       user: { email },
     });
   } catch (error) {
@@ -290,8 +337,26 @@ export const logoutUser = async (req, res) => {
     // res.clearCookie("userId");
 
     // "---- 🚀 JWT Authentication Approach-------"
+    // const isProduction = process.env.NODE_ENV === "production";
+    // res.clearCookie("access_token", {
+    //   httpOnly: true,
+    //   secure: isProduction,
+    //   sameSite: isProduction ? "none" : "lax",
+    // });
+
+    // "---- 🚀 Hybrid Authentication Approach-------"
+
+    // {Here we need to clear the session from the database}
+    // console.log(req.user)
+    await clearUserSession(req.user.sessionId);
+
     const isProduction = process.env.NODE_ENV === "production";
     res.clearCookie("access_token", {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+    });
+    res.clearCookie("refresh_token", {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? "none" : "lax",

@@ -36,6 +36,10 @@ const RegisterPage = () => {
         toast.success(response.data.message, { id: loadingToast });
         // Follow the backend's redirection command
         navigate(response.data.redirectTo || "/login");
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       } else {
         toast.error(response.data.message || "Registration failed", {
           id: loadingToast,

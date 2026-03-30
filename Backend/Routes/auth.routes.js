@@ -23,5 +23,5 @@ import { requireAuth } from "../Middleware/auth.middleware.js";
 router.get("/auth/me", requireAuth, authoController.getCurrentUser );
 
 // Logout the user
-router.post("/logout", authoController.logoutUser);
+router.post("/logout", requireAuth, authoController.logoutUser);
 export const authRoutes = router;

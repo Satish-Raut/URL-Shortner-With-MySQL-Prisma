@@ -57,19 +57,23 @@ export const updateLink = async (id, newUrl, newShortCode) => {
 
 // Get the session id for genereting a new access token
 export const getSessionById = async (sessionId) => {
-  const userId = await db
+  const session = await db
     .select()
     .from(sessionTable)
-    .where(eq(sessionId, sessionTable.id));
+    .where(eq(sessionTable.id, sessionId));
 
-  return userId;
+  return session;
 };
 
 export const findUserById = async (userId) => {
   const userData = await db
     .select()
     .from(userTable)
-    .where(eq(userId, userTable.id));
+    .where(eq(userTable.id, userId));
 
   return userData;
+};
+
+export const clearUserSession = async (sessionId) => {
+  await db.delete(sessionTable).where(eq(sessionTable.id, sessionId));
 };

@@ -48,7 +48,7 @@ export const requireAuth = async (req, res, next) => {
   const accessToken = req.cookies.access_token;
   const refreshToken = req.cookies.refresh_token;
 
-  console.log(accessToken, refreshToken);
+  // console.log("\nAcccess Token and the Refresh Token: ", accessToken, refreshToken);
   req.user = null;
 
   // "If both are not available that means user clicks on logout or lifetime of both token get expired"
@@ -70,7 +70,7 @@ export const requireAuth = async (req, res, next) => {
     }
   }
 
-  // "If the access token get expired then get a new access token using refresh token"
+  // "If the access token get expired then get a new access token created using refresh token"
   if (refreshToken) {
     try {
       const { newAccessToken, newRefreshToken, user } =
