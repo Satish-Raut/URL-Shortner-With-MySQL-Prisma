@@ -55,6 +55,11 @@ export const updateLink = async (id, newUrl, newShortCode) => {
   return result;
 };
 
+// Update userName by id
+export const updateUserName = async (id, name) => {
+  await db.update(userTable).set({ name: name }).where(eq(userTable.id, id));
+};
+
 // Get the session id for genereting a new access token
 export const getSessionById = async (sessionId) => {
   const session = await db

@@ -17,7 +17,7 @@ const Navbar = () => {
         const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
         const res = await axios.get(
           `${API_URL}/auth/me`,
-          { 
+          {
             withCredentials: true,
             /* Authorization: `Bearer ${localStorage.getItem("token")}` */
           }
@@ -43,7 +43,7 @@ const Navbar = () => {
       const res = await axios.post(
         `${API_URL}/logout`,
         {},
-        { 
+        {
           withCredentials: true,
           /* Authorization: `Bearer ${localStorage.getItem("token")}` */
         }
@@ -126,6 +126,12 @@ const Navbar = () => {
                   </div>
 
                   {/* Logout */}
+                  <button
+                    onClick={() => { navigate("/profile"); setIsDropdownOpen(false); }}
+                    className="block w-full text-left px-3 py-2 rounded-lg hover:bg-green-500/10 transition font-semibold text-sm cursor-pointer"
+                  >
+                    Profile
+                  </button>
                   <button
                     onClick={handleLogOut}
                     className="block w-full text-left px-3 py-2 rounded-lg text-red-400 hover:text-red-500 hover:bg-red-500/10 transition font-semibold text-sm cursor-pointer"

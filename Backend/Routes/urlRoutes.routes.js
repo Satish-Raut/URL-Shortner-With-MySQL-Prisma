@@ -6,6 +6,7 @@ import {
   insertNewData,
   deleteUrl,
   updateUrl,
+  updateProfileName,
 } from "../Controllers/urlController.js";
 
 import { requireAuth } from "../Middleware/auth.middleware.js";
@@ -20,6 +21,9 @@ router.post("/urlshortner", requireAuth, insertNewData);
 
 // Route to update a URL by ID
 router.put("/:id", requireAuth, updateUrl);
+
+// Route to update a profile name by ID
+router.put("/update-profile/:id", requireAuth, updateProfileName);
 
 // Route to delete a URL by ID
 router.delete("/:id", requireAuth, deleteUrl);

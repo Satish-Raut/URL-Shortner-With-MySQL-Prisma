@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { db } from "../Config/drizzleDB.js";
 import { urlTable } from "../drizzle/schema.js";
-import { eq } from "drizzle-orm";
+import { eq, ne } from "drizzle-orm";
 
 // {This imports for MySql}
 // import {
@@ -27,6 +27,7 @@ import {
   incrementClicks,
   deleteLink,
   updateLink,
+  updateUserName,
 } from "../Models/urlModelDrizzle.model.js";
 
 export const getAvailabledata = async (req, res) => {
@@ -161,5 +162,22 @@ export const updateUrl = async (req, res) => {
   } catch (error) {
     console.error("Error updating link:", error);
     res.status(500).json({ error: "Failed to update URL" });
+  }
+};
+
+export const updateProfileName = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name } = req.body;
+
+    await updateUserName(id, name);
+
+    res.status(200).json({
+      message: "Name Updated Successfully!",
+      name,
+    });
+  } catch (error) {
+    console.error("Error updating name:", error);
+    res.status(500).json({ error: "Failed to update name" });
   }
 };
