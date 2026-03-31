@@ -99,3 +99,41 @@ export const refreshAccessToken = async (refreshToken) => {
     throw error; // MUST rethrow so the middleware catches it and clears cookies
   }
 };
+
+// *Hybrid Authentication Function*
+export const hybridAuth = async ({ req, res, name, email, user }) => {
+  // {i. We need to create a Session.}
+  const session = await createSession(user.id || user.insertId, {
+    ip: req.clientIp,
+    userAgent: req.headers["user-agent"],
+  });
+
+  // {ii. Create an Access token.}
+  const accessToken = await createAccessTocken({
+    id: user.id || user.insertId,
+    name: user.name || name,
+    email: user.email || email,
+    sessionId: session,
+  });
+
+  // {iii. Create a Refresh token.}
+  const refreshToken = await createRefreshToken(session);
+
+  const isProduction = process.env.NODE_ENV === "production";
+
+  // {iv. Send the access token to frontend}
+  res.cookie("access_token", accessToken, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    maxAge: ACCESS_TOKEN_EXPIRY,
+  });
+
+  // {v. Send the refresh token to frontend}
+  res.cookie("refresh_token", refreshToken, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    maxAge: REFRESH_TOKEN_EXPIRY,
+  });
+};

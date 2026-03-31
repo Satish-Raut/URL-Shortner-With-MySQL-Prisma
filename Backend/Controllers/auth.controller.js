@@ -10,6 +10,7 @@ import {
   createSession,
   // generateTocken,
   hashPassword,
+  hybridAuth,
 } from "../Services/auth.service.js";
 import {
   loginUserSchema,
@@ -121,40 +122,7 @@ export const postLogin = async (req, res) => {
 
       // "---- 🚀 Hybrid Authentication Approach-------"
 
-      // {i. We need to create a Session.}
-      const session = await createSession(validUser.id, {
-        ip: req.clientIp,
-        userAgent: req.headers["user-agent"],
-      });
-
-      // {ii. Create an Access token.}
-      const accessToken = await createAccessTocken({
-        id: validUser.id,
-        name: validUser.name,
-        email: validUser.email,
-        sessionId: session,
-      });
-
-      // {iii. Create a Refresh token.}
-      const refreshToken = await createRefreshToken(session);
-
-      const isProduction = process.env.NODE_ENV === "production";
-
-      // {iv. Send the access token to frontend}
-      res.cookie("access_token", accessToken, {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: isProduction ? "none" : "lax",
-        maxAge: ACCESS_TOKEN_EXPIRY,
-      });
-
-      // {v. Send the refresh token to frontend}
-      res.cookie("refresh_token", refreshToken, {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: isProduction ? "none" : "lax",
-        maxAge: REFRESH_TOKEN_EXPIRY,
-      });
+      await hybridAuth({req, res, user:validUser});
 
       // {vi. After completion of login send the sucess message and the the page path to redirect.}
       res.status(200).json({
@@ -224,40 +192,7 @@ export const postRegister = async (req, res) => {
 
     // {4. After the registration complete and the user data stored in database , directly logs in that user}
 
-    // {i. We need to create a Session.}
-    const session = await createSession(user.insertId, {
-      ip: req.clientIp,
-      userAgent: req.headers["user-agent"],
-    });
-
-    // {ii. Create an Access token.}
-    const accessToken = await createAccessTocken({
-      id: user.insertId,
-      name: name,
-      email: email,
-      sessionId: session,
-    });
-
-    // {iii. Create a Refresh token.}
-    const refreshToken = await createRefreshToken(session);
-
-    const isProduction = process.env.NODE_ENV === "production";
-
-    // {iv. Send the access token to frontend}
-    res.cookie("access_token", accessToken, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
-      maxAge: ACCESS_TOKEN_EXPIRY,
-    });
-
-    // {v. Send the refresh token to frontend}
-    res.cookie("refresh_token", refreshToken, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
-      maxAge: REFRESH_TOKEN_EXPIRY,
-    });
+    await hybridAuth({req, res, name, email, user});
 
     // {vi. After completion of login send the sucess message and the the page path to redirect.}
 

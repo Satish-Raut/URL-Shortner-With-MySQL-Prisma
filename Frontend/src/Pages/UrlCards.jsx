@@ -10,15 +10,47 @@ const UrlCards = ({ urls, setUrls }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleCopy = async (id, shortcode) => {
-    const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
-    const fullUrl = `${BACKEND_URL}/${shortcode}`;
     try {
-      await navigator.clipboard.writeText(fullUrl);
+      const api_url = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      
+      // Ensure absolute URL even if api_url is relative (like /api)
+      let baseUrl = api_url;
+      if (api_url.startsWith("/")) {
+        baseUrl = window.location.origin + api_url;
+      }
+      
+      // Normalize slashes (remove trailing and ensure one between base and code)
+      const cleanBase = baseUrl.replace(/\/+$/, "");
+      const fullUrl = `${cleanBase}/${shortcode}`;
+
+      // Try modern clipboard API
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(fullUrl);
+      } else {
+        // Fallback for non-secure contexts or older browsers
+        const textArea = document.createElement("textarea");
+        textArea.value = fullUrl;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        const success = document.execCommand("copy");
+        document.body.removeChild(textArea);
+        
+        if (!success) {
+          throw new Error("Unable to copy to clipboard");
+        }
+      }
+
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 2000);
-      toast.success("Copied")
+      toast.success("Link copied!");
     } catch (err) {
       console.error("Failed to copy:", err);
+      toast.error("Failed to copy link");
     }
   };
 
@@ -239,7 +271,14 @@ const UrlCards = ({ urls, setUrls }) => {
                     <div className="flex items-center gap-2 mb-2">
                       {/* Short URL (Clickable) */}
                       <a
-                        href={`${import.meta.env.VITE_API_URL || "http://localhost:3000"}/${url.shortUrl}`}
+                        href={`${(() => {
+                          const api_url = import.meta.env.VITE_API_URL || "http://localhost:3000";
+                          let baseUrl = api_url;
+                          if (api_url.startsWith("/")) {
+                            baseUrl = window.location.origin + api_url;
+                          }
+                          return baseUrl.replace(/\/+$/, "");
+                        })()}/${url.shortUrl}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary font-bold hover:underline truncate text-base sm:text-lg"
