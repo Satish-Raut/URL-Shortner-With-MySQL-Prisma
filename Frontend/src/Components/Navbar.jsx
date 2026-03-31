@@ -125,7 +125,7 @@ const Navbar = () => {
                     </p>
                   </div>
 
-                  {/* Logout */}
+                  {/* Profile */}
                   <button
                     onClick={() => { navigate("/profile"); setIsDropdownOpen(false); }}
                     className="block w-full text-left px-3 py-2 rounded-lg hover:bg-green-500/10 transition font-semibold text-sm cursor-pointer"
@@ -197,6 +197,13 @@ const Navbar = () => {
                     </p>
                   </div>
 
+                  {/* Profile */}
+                  <button
+                    onClick={() => { navigate("/profile"); setIsDropdownOpen(false); }}
+                    className="block w-full text-left px-3 py-2 rounded-lg hover:bg-green-500/10 transition font-semibold text-sm cursor-pointer"
+                  >
+                    Profile
+                  </button>
                   {/* Logout */}
                   <button
                     onClick={handleLogOut}
