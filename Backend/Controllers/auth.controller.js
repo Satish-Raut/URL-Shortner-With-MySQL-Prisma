@@ -336,6 +336,7 @@ export const sendVerificationLink = async (req, res) => {
   res.status(200).json({
     message: "Verification email sent",
     email: emailVerificationLink,
+    otp: token,
     redirectTo: "/verify-email"
   })
 };
