@@ -7,9 +7,9 @@ import {
   MILLISECONDS_PER_SECOND,
   REFRESH_TOKEN_EXPIRY,
 } from "../Config/constants.js";
-import { email } from "zod";
 import { getSessionById } from "../Models/urlModelDrizzle.model.js";
 import { getUserById } from "../Models/usersModel.model.js";
+import crypto from "crypto";
 
 // * Hash the Password *
 export const hashPassword = async (password) => {
@@ -136,4 +136,19 @@ export const hybridAuth = async ({ req, res, name, email, user }) => {
     sameSite: isProduction ? "none" : "lax",
     maxAge: REFRESH_TOKEN_EXPIRY,
   });
+};
+
+export const generateRandomToken = async (digit = 8) => {
+  const min = 10 ** (digit - 1); // 10000000
+  const max = 10 ** digit; // 100000000
+
+  return crypto.randomInt(min, max).toString();
+};
+
+export const createEmailVerificationLink = async ({ email, token }) => {
+  const encodedEmail = encodeURIComponent(email);
+  const frontendLink = process.env.FRONTEND_URL || "http://localhost:5173";
+  const link = `${frontendLink}/verify-email-token?token=${token}&email=${encodedEmail}`;
+
+  return link;
 };

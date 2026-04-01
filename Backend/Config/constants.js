@@ -17,3 +17,6 @@ export const REFRESH_TOKEN_EXPIRY =
 
 export const OAUTH_EXCHANGE_EXPIRY =
   10 * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
+
+export const EMAIL_EXPIRY_TIME = new Date(Date.now() + 1000 * 60 * 60 * 24); // 24h
+export const CURRENT_TIME = new Date(Date.now());

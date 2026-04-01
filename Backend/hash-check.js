@@ -28,6 +28,14 @@ console.log("p1 - p2", await verifyPassword(p1, hashP2));
 console.log("p2 - p2", await verifyPassword(p2, hashP2));
 console.log("p2 - p1", await verifyPassword(p2, hashP1));
 
+// Checking Some time functions and comparision between them
+
+let date = new Date(Date.now());
+let time = new Date(Date.now() + 1000 * 60 * 60 * 24)
+console.log(date, "  <==>  ", time);
+console.log(date < time)
+console.log(date > time)
+
 /*
     NOTE:
 

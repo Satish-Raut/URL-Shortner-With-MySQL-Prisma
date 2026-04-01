@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, NavLink } from "react-router-dom";
 import toast from "react-hot-toast";
 import HomeAnimatedBackground from "../Components/HomeAnimatedBackground";
+import { MdOutlineEmail, MdVerified } from "react-icons/md";
 
 /* ─────────────────────────────────────────────────────────
    Small reusable stat card
@@ -85,7 +86,7 @@ const Profile = () => {
     const handleEditClick = async () => {
         setEditingName(user.name);
         setEditingId(user.id);
-    }
+    };
 
     /* ── save name ── */
     const handleSaveName = async () => {
@@ -96,7 +97,7 @@ const Profile = () => {
             const res = await axios.put(
                 `${API_URL}/update-profile/${editingId}`,
                 { name: newName.trim() },
-                { withCredentials: true }
+                { withCredentials: true },
             );
             setUser((prev) => ({ ...prev, name: newName.trim() }));
             setEditingName(false);
@@ -154,27 +155,34 @@ const Profile = () => {
             <HomeAnimatedBackground />
 
             <div className="max-w-4xl mx-auto space-y-8 relative z-10">
-
                 {/* ── Page heading ── */}
                 <div className="text-center mb-2 animate-in fade-in slide-in-from-bottom-6 duration-700">
                     <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
-                        Your{" "}
-                        <span className="text-gradient">Profile</span>
+                        Your <span className="text-gradient">Profile</span>
                     </h1>
-                    <p className="text-muted mt-2">Manage your account and view your link stats</p>
+                    <p className="text-muted mt-2">
+                        Manage your account and view your link stats
+                    </p>
                 </div>
 
                 {/* ── Profile hero card ── */}
                 <div className="glass-card p-6 sm:p-8 rounded-3xl border border-white/5 flex flex-col sm:flex-row items-center gap-6 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100 fill-mode-both">
-
                     {/* avatar */}
                     <div className="relative shrink-0">
                         <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-4xl sm:text-5xl font-extrabold text-white shadow-2xl shadow-primary/30 select-none">
                             {avatarLetter}
                         </div>
                         <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-green-500 rounded-full border-2 border-background flex items-center justify-center">
-                            <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            <svg
+                                className="w-3.5 h-3.5 text-white"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                            >
+                                <path
+                                    fillRule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clipRule="evenodd"
+                                />
                             </svg>
                         </div>
                     </div>
@@ -201,7 +209,10 @@ const Profile = () => {
                                         {savingName ? "Saving…" : "Save"}
                                     </button>
                                     <button
-                                        onClick={() => { setEditingName(false); setNewName(user?.name || ""); }}
+                                        onClick={() => {
+                                            setEditingName(false);
+                                            setNewName(user?.name || "");
+                                        }}
                                         className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm font-semibold transition-all cursor-pointer"
                                     >
                                         Cancel
@@ -219,19 +230,64 @@ const Profile = () => {
                                     className="p-1.5 rounded-lg hover:bg-white/10 text-muted hover:text-white transition-colors cursor-pointer"
                                     title="Edit name"
                                 >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                        />
                                     </svg>
                                 </button>
                             </div>
                         )}
 
-                        <p className="text-muted text-sm mb-3">{user?.email}</p>
+                        {/* Email Verification */}
+                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
+                            <p className="text-muted text-sm">{user?.email}</p>
 
+                            {!user.isEmailValid ? (
+                                <NavLink
+                                    to="/verify-email"
+                                    state={{ userEmail: user?.email }}
+                                    id="verify-email-btn"
+                                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full 
+               bg-amber-500/15 border border-amber-500/30 text-amber-400 
+               text-xs font-semibold hover:bg-amber-500/25 
+               hover:border-amber-500/50 transition-all 
+               cursor-pointer active:scale-95"
+                                >
+                                    <MdOutlineEmail className="w-4 h-4" />
+                                    Verify Email
+                                </NavLink>
+                            ) : (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full 
+                   bg-green-500/15 border border-green-500/30 text-green-400 
+                   text-xs font-semibold">
+                                    <MdVerified className="w-4 h-4" />
+                                    Verified
+                                </span>
+                            )}
+                        </div>
+
+                        {/* User Registration Date */}
                         <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/15 border border-primary/30 text-primary text-xs font-semibold">
-                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                                <svg
+                                    className="w-3 h-3"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                >
+                                    <path
+                                        fillRule="evenodd"
+                                        d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                                        clipRule="evenodd"
+                                    />
                                 </svg>
                                 Member since {memberSince}
                             </span>
@@ -248,12 +304,21 @@ const Profile = () => {
                         onClick={handleLogout}
                         className="shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/50 transition-all text-sm font-semibold cursor-pointer"
                     >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                            />
                         </svg>
                         Logout
                     </button>
-
                 </div>
 
                 {/* ── Stats row ── */}
@@ -263,8 +328,18 @@ const Profile = () => {
                         value={urls.length}
                         color="bg-primary/20 text-primary"
                         icon={
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                            <svg
+                                className="w-6 h-6"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                                />
                             </svg>
                         }
                     />
@@ -273,8 +348,18 @@ const Profile = () => {
                         value={totalClicks}
                         color="bg-secondary/20 text-secondary"
                         icon={
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5" />
+                            <svg
+                                className="w-6 h-6"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"
+                                />
                             </svg>
                         }
                     />
@@ -283,8 +368,18 @@ const Profile = () => {
                         value={topLink?.clicks ?? 0}
                         color="bg-accent/20 text-accent"
                         icon={
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                            <svg
+                                className="w-6 h-6"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                                />
                             </svg>
                         }
                     />
@@ -293,8 +388,18 @@ const Profile = () => {
                         value={urls.length ? Math.round(totalClicks / urls.length) : 0}
                         color="bg-green-500/20 text-green-400"
                         icon={
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            <svg
+                                className="w-6 h-6"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                                />
                             </svg>
                         }
                     />
@@ -309,8 +414,18 @@ const Profile = () => {
                             onClick={() => navigate("/urlshortner")}
                             className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-primary/20 cursor-pointer active:scale-95"
                         >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                            <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M12 4v16m8-8H4"
+                                />
                             </svg>
                             New Link
                         </button>
@@ -319,12 +434,24 @@ const Profile = () => {
                     {urls.length === 0 ? (
                         <div className="text-center py-16 px-6">
                             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/5 flex items-center justify-center">
-                                <svg className="w-8 h-8 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                <svg
+                                    className="w-8 h-8 text-muted"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="1.5"
+                                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                                    />
                                 </svg>
                             </div>
                             <p className="text-muted font-medium">No links yet</p>
-                            <p className="text-muted/60 text-sm mt-1">Create your first short link to get started</p>
+                            <p className="text-muted/60 text-sm mt-1">
+                                Create your first short link to get started
+                            </p>
                         </div>
                     ) : (
                         <div className="divide-y divide-white/5">
@@ -339,7 +466,10 @@ const Profile = () => {
                                 <div
                                     key={url.id}
                                     className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-2 sm:gap-4 px-6 py-4 hover:bg-white/[0.02] transition-colors group animate-in fade-in slide-in-from-left-4 duration-500"
-                                    style={{ animationDelay: `${i * 60}ms`, animationFillMode: "both" }}
+                                    style={{
+                                        animationDelay: `${i * 60}ms`,
+                                        animationFillMode: "both",
+                                    }}
                                 >
                                     {/* link details */}
                                     <div className="min-w-0">
@@ -358,13 +488,17 @@ const Profile = () => {
 
                                     {/* clicks */}
                                     <div className="flex items-center sm:justify-center gap-1.5">
-                                        <span className="text-[10px] uppercase text-muted sm:hidden">Clicks:</span>
+                                        <span className="text-[10px] uppercase text-muted sm:hidden">
+                                            Clicks:
+                                        </span>
                                         <span className="text-white font-bold">{url.clicks}</span>
                                     </div>
 
                                     {/* date */}
                                     <div className="flex items-center sm:justify-end gap-1.5">
-                                        <span className="text-[10px] uppercase text-muted sm:hidden">Created:</span>
+                                        <span className="text-[10px] uppercase text-muted sm:hidden">
+                                            Created:
+                                        </span>
                                         <span className="text-muted text-xs">
                                             {new Date(url.createdAt).toLocaleDateString()}
                                         </span>
@@ -408,7 +542,6 @@ const Profile = () => {
                         ))}
                     </div>
                 </div>
-
             </div>
         </section>
     );

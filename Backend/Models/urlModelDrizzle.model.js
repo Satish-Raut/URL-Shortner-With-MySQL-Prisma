@@ -1,6 +1,12 @@
-import { eq, sql } from "drizzle-orm";
+import { eq, gt, sql } from "drizzle-orm";
 import { db } from "../Config/drizzleDB.js";
-import { sessionTable, urlTable, userTable } from "../drizzle/schema.js";
+import {
+  emailVerificationTable,
+  sessionTable,
+  urlTable,
+  userTable,
+} from "../drizzle/schema.js";
+import { CURRENT_TIME, EMAIL_EXPIRY_TIME } from "../Config/constants.js";
 
 // Get all links (for the frontend list)
 export const getAllLinks = async (id) => {
@@ -70,6 +76,7 @@ export const getSessionById = async (sessionId) => {
   return session;
 };
 
+// Get the user data by their id
 export const findUserById = async (userId) => {
   const userData = await db
     .select()
@@ -79,6 +86,21 @@ export const findUserById = async (userId) => {
   return userData;
 };
 
+// This function is basically used during Logout
 export const clearUserSession = async (sessionId) => {
   await db.delete(sessionTable).where(eq(sessionTable.id, sessionId));
+};
+
+export const insertEmailVarificationToken = async ({ userId, token }) => {
+  // Remove any existing token for this specific user before generating a new one
+  // because the schema enforces a unique constraint on userId.
+  await db
+    .delete(emailVerificationTable)
+    .where(eq(emailVerificationTable.userId, userId));
+
+  return await db.insert(emailVerificationTable).values({
+    userId,
+    token,
+    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24), // 24h
+  });
 };

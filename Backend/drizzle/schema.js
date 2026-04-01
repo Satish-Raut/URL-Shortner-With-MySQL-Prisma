@@ -1,17 +1,37 @@
 import { relations } from "drizzle-orm";
-import { int, mysqlTable, timestamp, varchar, boolean, text } from "drizzle-orm/mysql-core";
+import {
+  int,
+  mysqlTable,
+  timestamp,
+  varchar,
+  boolean,
+  text,
+} from "drizzle-orm/mysql-core";
 
-// Schema for Users data table
+// "----------------💡 Schema for Users data table -----------"
 export const userTable = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   password: varchar("password", { length: 255 }).notNull(),
+  isEmailValid: boolean("is_email_valid").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
 });
 
-// Schema for URL table
+// "----------------💡 Schema for Email Vrification table -----------"
+export const emailVerificationTable = mysqlTable("email_verification", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("user_id")
+    .notNull()
+    .references(() => userTable.id, { onDelete: "cascade" })
+    .unique(), // one active token per user
+  token: varchar("token", { length: 8 }).notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// "----------------💡Schema for URL table ------------------"
 export const urlTable = mysqlTable("shortLinks", {
   id: int("id").primaryKey().autoincrement(),
   shortCode: varchar("short_code", { length: 225 }).unique().notNull(),
@@ -21,7 +41,7 @@ export const urlTable = mysqlTable("shortLinks", {
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
   userId: int("user_id")
     .notNull()
-    .references(() => userTable.id), //{ This is foregin key which conncts to the user table}
+    .references(() => userTable.id, { onDelete: "cascade" }), //{ This is foregin key which conncts to the user table}
 });
 
 // "----------------💡Hybrid Authentication approach.--------------"
@@ -54,9 +74,9 @@ export const urlRelation = relations(urlTable, ({ one }) => ({
 }));
 
 // {3. A single session belongs to a single user only.}
-export const sessionRelation = relations(sessionTable, ({one})=>({
+export const sessionRelation = relations(sessionTable, ({ one }) => ({
   user: one(userTable, {
-    fields: [sessionTable.userId],  // Foreign Key
-    references: [userTable.id]
-  })
-}))
+    fields: [sessionTable.userId], // Foreign Key
+    references: [userTable.id],
+  }),
+}));
